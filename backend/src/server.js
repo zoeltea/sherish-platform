@@ -10,6 +10,7 @@ const serviceRoutes = require('./routes/services');
 const mitraRoutes = require('./routes/mitra');
 const adminRoutes = require('./routes/admin');
 const telegramRoutes = require('./routes/telegram');
+const paymentRoutes = require('./routes/payment');
 const { PrismaClient } = require('@prisma/client');
 const invoiceService = require('./services/invoiceService');
 const TelegramService = require('./services/telegramService');
@@ -136,6 +137,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/mitra', mitraRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/telegram', telegramRoutes);
+app.use('/api/payment', paymentRoutes);
 
 // Error Handling
 app.use((err, req, res, next) => {

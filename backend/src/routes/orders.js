@@ -3,6 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 const emailService = require('../services/emailService');
 const invoiceService = require('../services/invoiceService');
+const paymentService = require('../services/paymentService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -270,6 +271,49 @@ router.get('/:identifier', authenticateToken, async (req, res) => {
     res.json({ order });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/orders/:identifier/payment (Midtrans Snap Token Generator)
+router.post('/:identifier/payment', authenticateToken, async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const { paymentType = 'FULL' } = req.body; // 'DP' | 'FINAL' | 'FULL'
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { orderNumber: identifier }
+        ]
+      },
+      include: {
+        user: true,
+        items: {
+          include: { product: true }
+        }
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order tidak ditemukan' });
+    }
+
+    if (req.user.role === 'CUSTOMER' && order.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Akses ditolak.' });
+    }
+    if (req.user.role === 'MITRA' && order.userId !== req.user.id && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Akses ditolak.' });
+    }
+
+    const snapResult = await paymentService.createSnapTransaction(order, paymentType);
+
+    res.status(200).json({
+      message: 'Payment token/link berhasil dibuat.',
+      ...snapResult
+    });
+  } catch (err) {
+    res.status(500).json({ error: `Gagal membuat payment link: ${err.message}` });
   }
 });
 
