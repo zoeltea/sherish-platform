@@ -165,6 +165,10 @@
 
     // ================= CLIENT ROUTER =================
     window.addEventListener('hashchange', router);
+    window.addEventListener('beforeunload', () => {
+      if (window.orderPollingInterval) clearInterval(window.orderPollingInterval);
+    });
+
     window.addEventListener('load', async () => {
       await fetchProductsCache();
       updateHeaderState();
@@ -188,6 +192,11 @@
 
       // Highlight active navbar
       document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-nav'));
+
+      if (window.orderPollingInterval) {
+        clearInterval(window.orderPollingInterval);
+        window.orderPollingInterval = null;
+      }
 
       if (hash === '#/' || hash === '') {
         document.getElementById('nav-home')?.classList.add('active-nav');
@@ -964,6 +973,136 @@
     }
 
     // ================= 7. DEDICATED ORDER DETAIL PAGE VIEW =================
+    function getStepperHtml(status) {
+      const isCancelled = status === 'CANCELLED';
+      if (isCancelled) {
+        return `
+          <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold text-center">
+            Pesanan ini telah Dibatalkan (Cancelled).
+          </div>
+        `;
+      }
+
+      let step1 = 'pending', step2 = 'pending', step3 = 'pending', step4 = 'pending';
+      const s = status || 'PENDING_PAYMENT';
+      if (['DP_CONFIRMED', 'MATERIALS_PREPARATION', 'IN_PRODUCTION', 'QUALITY_CHECK', 'READY_FOR_SHIPMENT', 'FINAL_PAYMENT_CONFIRMED', 'SHIPPED', 'COMPLETED'].includes(s)) {
+        step1 = 'done';
+      } else {
+        step1 = 'active';
+      }
+
+      if (['MATERIALS_PREPARATION', 'IN_PRODUCTION'].includes(s)) {
+        step2 = 'active';
+      } else if (['QUALITY_CHECK', 'READY_FOR_SHIPMENT', 'FINAL_PAYMENT_CONFIRMED', 'SHIPPED', 'COMPLETED'].includes(s)) {
+        step2 = 'done';
+      }
+
+      if (['QUALITY_CHECK', 'READY_FOR_SHIPMENT', 'FINAL_PAYMENT_CONFIRMED'].includes(s)) {
+        step3 = 'active';
+      } else if (['SHIPPED', 'COMPLETED'].includes(s)) {
+        step3 = 'done';
+      }
+
+      if (s === 'SHIPPED') {
+        step4 = 'active';
+      } else if (s === 'COMPLETED') {
+        step4 = 'done';
+      }
+
+      const renderStepCircle = (stepState, num, icon) => {
+        if (stepState === 'done') {
+          return `<div class="w-8 h-8 rounded-full stepper-done flex items-center justify-center mx-auto font-bold"><i data-lucide="check" class="w-4 h-4"></i></div>`;
+        } else if (stepState === 'active') {
+          return `<div class="w-8 h-8 rounded-full stepper-active flex items-center justify-center mx-auto font-bold animate-pulse"><i data-lucide="${icon || 'hammer'}" class="w-4 h-4"></i></div>`;
+        } else {
+          return `<div class="w-8 h-8 rounded-full bg-earth-200 text-earth-600 flex items-center justify-center mx-auto font-bold">${num}</div>`;
+        }
+      };
+
+      return `
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs pt-4">
+          <div class="space-y-2">
+            ${renderStepCircle(step1, 1, 'check')}
+            <p class="font-bold ${step1 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">1. Pembayaran</p>
+            <p class="text-[10px] ${step1 === 'done' ? 'text-emerald-600 font-semibold' : step1 === 'active' ? 'text-amber-600 font-semibold' : 'text-earth-400'}">${step1 === 'done' ? 'Terverifikasi' : step1 === 'active' ? 'Menunggu Bayar' : 'Belum Mulai'}</p>
+          </div>
+
+          <div class="space-y-2">
+            ${renderStepCircle(step2, 2, 'hammer')}
+            <p class="font-bold ${step2 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">2. Produksi Workshop</p>
+            <p class="text-[10px] ${step2 === 'done' ? 'text-emerald-600' : step2 === 'active' ? 'text-sage-800 font-semibold' : 'text-earth-400'}">${step2 === 'done' ? 'Selesai Dirakit' : step2 === 'active' ? 'Sedang Dirakit' : 'Antrean Pabrik'}</p>
+          </div>
+
+          <div class="space-y-2">
+            ${renderStepCircle(step3, 3, 'search')}
+            <p class="font-bold ${step3 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">3. Quality Check</p>
+            <p class="text-[10px] ${step3 === 'done' ? 'text-emerald-600' : step3 === 'active' ? 'text-sage-800 font-semibold' : 'text-earth-400'}">${step3 === 'done' ? 'Lolos QC & Siap' : step3 === 'active' ? 'Inspeksi & Finishing' : 'Menunggu QC'}</p>
+          </div>
+
+          <div class="space-y-2">
+            ${renderStepCircle(step4, 4, 'truck')}
+            <p class="font-bold ${step4 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">4. Pengiriman & Rakit</p>
+            <p class="text-[10px] ${step4 === 'done' ? 'text-emerald-600 font-semibold' : step4 === 'active' ? 'text-sage-800 font-semibold' : 'text-earth-400'}">${step4 === 'done' ? 'Diterima Customer' : step4 === 'active' ? 'Sedang Dikirim' : 'Instalasi di Lokasi'}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function updateOrderStatusUI(order) {
+      const statusBadge = document.getElementById('orderStatusBadge');
+      if (statusBadge) {
+        statusBadge.innerText = order.status;
+        statusBadge.className = `px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+          order.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
+          order.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-700 border border-rose-500/20' :
+          order.status === 'SHIPPED' ? 'bg-indigo-500/10 text-indigo-700 border border-indigo-500/20' :
+          'bg-sage-500/10 text-sage-800 border border-sage-500/20'
+        }`;
+      }
+
+      const paymentBadge = document.getElementById('orderPaymentStatusBadge');
+      if (paymentBadge) {
+        paymentBadge.innerText = order.paymentStatus === 'FULLY_PAID' ? 'LUNAS (Verified)' : order.paymentStatus === 'DP_PAID' ? 'DP LUNAS' : order.paymentStatus;
+        paymentBadge.className = `px-3 py-1.5 rounded-full text-xs font-bold ${
+          order.paymentStatus === 'FULLY_PAID' || order.paymentStatus === 'DP_PAID' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-700 border border-amber-500/20'
+        }`;
+      }
+
+      const stepperContainer = document.getElementById('orderStepperContainer');
+      if (stepperContainer) {
+        stepperContainer.innerHTML = getStepperHtml(order.status);
+      }
+
+      lucide.createIcons();
+    }
+
+    function startOrderStatusPolling(orderNumber, intervalSeconds = 5) {
+      if (window.orderPollingInterval) {
+        clearInterval(window.orderPollingInterval);
+        window.orderPollingInterval = null;
+      }
+
+      const token = localStorage.getItem('sherish_token');
+      window.orderPollingInterval = setInterval(async () => {
+        try {
+          const res = await fetch(`${API_URL}/orders/${orderNumber}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.order) {
+            updateOrderStatusUI(data.order);
+            if (data.order.status === 'COMPLETED' || data.order.status === 'DELIVERED' || data.order.status === 'CANCELLED') {
+              clearInterval(window.orderPollingInterval);
+              window.orderPollingInterval = null;
+            }
+          }
+        } catch (err) {
+          console.error('Order status polling failed:', err);
+        }
+      }, intervalSeconds * 1000);
+    }
+
     async function renderOrderDetailPage(container, orderNumber) {
       const token = localStorage.getItem('sherish_token');
       let order = null;
@@ -995,14 +1134,22 @@
           <!-- Header Order Status Banner -->
           <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <span class="text-[10px] text-sage-800 font-bold uppercase tracking-widest">Status Pesanan</span>
+              <div class="flex items-center gap-2 mb-1">
+                <span class="text-[10px] text-sage-800 font-bold uppercase tracking-widest">Status Pesanan:</span>
+                <span id="orderStatusBadge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                  order.status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20' :
+                  order.status === 'CANCELLED' ? 'bg-rose-500/10 text-rose-700 border border-rose-500/20' :
+                  order.status === 'SHIPPED' ? 'bg-indigo-500/10 text-indigo-700 border border-indigo-500/20' :
+                  'bg-sage-500/10 text-sage-800 border border-sage-500/20'
+                }">${order.status}</span>
+              </div>
               <h1 class="font-serif text-2xl font-bold text-earth-900 mt-0.5">${order.orderNumber}</h1>
               <p class="text-xs text-earth-500 mt-1">Dipesan pada ${new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
             </div>
             
             <div class="text-right">
-              <span class="px-3 py-1.5 rounded-full text-xs font-bold ${order.paymentStatus==='FULLY_PAID'?'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20':'bg-amber-500/10 text-amber-700 border border-amber-500/20'}">
-                ${order.paymentStatus === 'FULLY_PAID' ? 'LUNAS (Verified)' : order.paymentStatus}
+              <span id="orderPaymentStatusBadge" class="px-3 py-1.5 rounded-full text-xs font-bold ${order.paymentStatus==='FULLY_PAID'||order.paymentStatus==='DP_PAID'?'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20':'bg-amber-500/10 text-amber-700 border border-amber-500/20'}">
+                ${order.paymentStatus === 'FULLY_PAID' ? 'LUNAS (Verified)' : order.paymentStatus === 'DP_PAID' ? 'DP LUNAS' : order.paymentStatus}
               </span>
             </div>
           </div>
@@ -1010,31 +1157,8 @@
           <!-- Interactive Production & Delivery Stepper -->
           <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-4">
             <h3 class="font-serif text-base font-bold text-earth-900">Alur Pengerjaan & Pengiriman Pabrik Sherish</h3>
-            
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs pt-4">
-              <div class="space-y-2">
-                <div class="w-8 h-8 rounded-full stepper-done flex items-center justify-center mx-auto font-bold"><i data-lucide="check" class="w-4 h-4"></i></div>
-                <p class="font-bold text-earth-900">1. Pembayaran Lunas</p>
-                <p class="text-[10px] text-emerald-600">Terverifikasi</p>
-              </div>
-
-              <div class="space-y-2">
-                <div class="w-8 h-8 rounded-full stepper-active flex items-center justify-center mx-auto font-bold"><i data-lucide="hammer" class="w-4 h-4"></i></div>
-                <p class="font-bold text-earth-900">2. Produksi Workshop</p>
-                <p class="text-[10px] text-sage-800">Sedang Dirakit Presisi</p>
-              </div>
-
-              <div class="space-y-2">
-                <div class="w-8 h-8 rounded-full bg-earth-200 text-earth-600 flex items-center justify-center mx-auto font-bold">3</div>
-                <p class="font-medium text-earth-600">3. Quality Check</p>
-                <p class="text-[10px] text-earth-400">Inspeksi Kayu & Finishing</p>
-              </div>
-
-              <div class="space-y-2">
-                <div class="w-8 h-8 rounded-full bg-earth-200 text-earth-600 flex items-center justify-center mx-auto font-bold">4</div>
-                <p class="font-medium text-earth-600">4. Pengiriman & Rakit</p>
-                <p class="text-[10px] text-earth-400">Instalasi di Lokasi</p>
-              </div>
+            <div id="orderStepperContainer">
+              ${getStepperHtml(order.status)}
             </div>
           </div>
 
@@ -1082,6 +1206,11 @@
       `;
 
       lucide.createIcons();
+
+      // Start automatic polling for real-time order status sync
+      if (order.status !== 'COMPLETED' && order.status !== 'DELIVERED' && order.status !== 'CANCELLED') {
+        startOrderStatusPolling(order.orderNumber, 5);
+      }
     }
 
     // ================= 8. DEDICATED PROFILE & TRANSACTIONS PAGE VIEW =================

@@ -9,9 +9,14 @@ const orderRoutes = require('./routes/orders');
 const serviceRoutes = require('./routes/services');
 const mitraRoutes = require('./routes/mitra');
 const adminRoutes = require('./routes/admin');
+const telegramRoutes = require('./routes/telegram');
 const { PrismaClient } = require('@prisma/client');
 const invoiceService = require('./services/invoiceService');
+const TelegramService = require('./services/telegramService');
 const prisma = new PrismaClient();
+
+// Load environment variables from .env.telegram if exists
+require('dotenv').config({ path: path.join(__dirname, '../../.env.telegram') });
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -130,6 +135,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/mitra', mitraRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/telegram', telegramRoutes);
 
 // Error Handling
 app.use((err, req, res, next) => {
@@ -142,4 +148,12 @@ app.use((err, req, res, next) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🌿 Sherish Unified API Server running on port ${PORT}`);
   console.log(`📁 Media storage located at: ${STORAGE_DIR}`);
+  
+  // Log Telegram bot status
+  if (process.env.ZEPHYR_BOT_TOKEN) {
+    console.log(`🤖 Telegram Zephyr Bot: ${process.env.ZEPHYR_BOT_NAME || '@agent_zoel_zephyr_bot'}`);
+    console.log(`📱 Telegram Webhook: POST /api/telegram/webhook`);
+  } else {
+    console.log('⚠️  Telegram bot not configured (ZEPHYR_BOT_TOKEN missing)');
+  }
 });
