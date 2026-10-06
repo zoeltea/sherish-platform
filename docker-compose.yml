@@ -34,6 +34,8 @@ services:
     ports:
       - "8095:8000"
     volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
       - ./storage/uploads:/app/storage/uploads
 
   sherish-fe-user:
@@ -44,6 +46,8 @@ services:
     restart: unless-stopped
     ports:
       - "8096:80"
+    volumes:
+      - ./frontend-user:/usr/share/nginx/html
 
   sherish-fe-mitra:
     build:
@@ -53,6 +57,8 @@ services:
     restart: unless-stopped
     ports:
       - "8097:80"
+    volumes:
+      - ./frontend-mitra:/usr/share/nginx/html
 
   sherish-fe-admin:
     build:
@@ -62,6 +68,8 @@ services:
     restart: unless-stopped
     ports:
       - "8098:80"
+    volumes:
+      - ./frontend-admin:/usr/share/nginx/html
 
 volumes:
   sherish_pgdata:

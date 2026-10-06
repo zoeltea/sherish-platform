@@ -17,6 +17,14 @@ enum Role {
   SUPER_ADMIN
 }
 
+enum MitraType {
+  OUTLET_INTERNAL
+  MITRA_TOKO
+  RESELLER
+  SALES_CANVASER
+  DIGITAL_MARKETING
+}
+
 enum MitraStatus {
   PENDING_VERIFICATION
   VERIFIED
@@ -87,6 +95,8 @@ model User {
   orders        Order[]
   bookings      ServiceBooking[]
   reviews       Review[]
+  referralsMade MitraProfile[] @relation("ReferralSales")
+  commissions   ReferralCommission[]
 }
 
 model MitraProfile {
@@ -94,7 +104,10 @@ model MitraProfile {
   userId          String       @unique
   user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   storeName       String       // Nama Toko / Studio Desain / Nama Sales
-  partnerType     String       @default("TOKO_FURNITUR") // TOKO_FURNITUR, INTERIOR_DESIGNER, KONTRAKTOR, INDEPENDENT_SALES
+  partnerType     String       @default("TOKO_FURNITUR") // Legacy support
+  mitraType       MitraType    @default(MITRA_TOKO)
+  referralSalesId String?      // Sales/Canvaser yang merekrut
+  referralSales   User?        @relation("ReferralSales", fields: [referralSalesId], references: [id])
   storeCity       String
   storeAddress    String
   workArea        String?      // "Jakarta", "Bandung", "Surabaya", etc for sales territory
@@ -109,6 +122,23 @@ model MitraProfile {
   updatedAt       DateTime     @updatedAt
 
   orders          Order[]
+  commissions     ReferralCommission[]
+}
+
+model ReferralCommission {
+  id               String       @id @default(uuid())
+  salesId          String       // FK to User (sales)
+  sales            User         @relation(fields: [salesId], references: [id], onDelete: Cascade)
+  referredMitraId  String       // FK to MitraProfile
+  referredMitra    MitraProfile @relation(fields: [referredMitraId], references: [id], onDelete: Cascade)
+  orderId          String?      // Optional: order that generated this commission
+  commissionAmount Float        // IDR amount
+  commissionRate   Float        @default(0.05) // 5% default referral bonus
+  status           String       @default("PENDING") // PENDING, APPROVED, PAID, REJECTED
+  notes            String?
+  paidAt           DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
 }
 
 model Category {

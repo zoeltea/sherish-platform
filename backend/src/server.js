@@ -9,6 +9,8 @@ const orderRoutes = require('./routes/orders');
 const serviceRoutes = require('./routes/services');
 const mitraRoutes = require('./routes/mitra');
 const adminRoutes = require('./routes/admin');
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 const app = express();
 const PORT = process.env.PORT || 8000;
@@ -43,6 +45,46 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
     version: '1.0.0'
   });
+});
+
+// Direct alias for GET /api/users/sales
+app.get('/api/users/sales', async (req, res) => {
+  try {
+    const { workArea } = req.query;
+    const where = {
+      role: 'MITRA',
+      isActive: true,
+      mitraProfile: {
+        mitraType: 'SALES_CANVASER'
+      }
+    };
+
+    if (workArea) {
+      where.mitraProfile.workArea = { contains: workArea, mode: 'insensitive' };
+    }
+
+    const salesList = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        mitraProfile: {
+          select: {
+            id: true,
+            storeName: true,
+            workArea: true,
+            storeCity: true
+          }
+        }
+      }
+    });
+
+    res.json({ count: salesList.length, sales: salesList });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // API Routes

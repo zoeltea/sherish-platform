@@ -121,6 +121,62 @@ router.patch('/mitra/:id/status', authorizeRoles('ADMIN_QUALITY', 'SUPER_ADMIN')
   }
 });
 
+// GET /api/admin/commissions (List all referral commissions for finance/admin)
+router.get('/commissions', async (req, res) => {
+  try {
+    const { status } = req.query;
+    const where = status ? { status } : {};
+
+    const commissions = await prisma.referralCommission.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        sales: { select: { fullName: true, email: true, phoneNumber: true } },
+        referredMitra: { select: { storeName: true, storeCity: true, mitraType: true, workArea: true } }
+      }
+    });
+
+    const totalPending = commissions.filter(c => c.status === 'PENDING').reduce((sum, c) => sum + c.commissionAmount, 0);
+    const totalApproved = commissions.filter(c => c.status === 'APPROVED').reduce((sum, c) => sum + c.commissionAmount, 0);
+    const totalPaid = commissions.filter(c => c.status === 'PAID').reduce((sum, c) => sum + c.commissionAmount, 0);
+
+    res.json({
+      summary: {
+        totalPending,
+        totalApproved,
+        totalPaid,
+        count: commissions.length
+      },
+      commissions
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/commissions/:id/status (Approve/Reject/Mark Paid commission)
+router.patch('/commissions/:id/status', authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const { status, notes } = req.body;
+    const updateData = { status };
+    if (status === 'PAID') updateData.paidAt = new Date();
+    if (notes) updateData.notes = notes;
+
+    const updated = await prisma.referralCommission.update({
+      where: { id: req.params.id },
+      data: updateData,
+      include: {
+        sales: { select: { fullName: true, email: true } },
+        referredMitra: { select: { storeName: true } }
+      }
+    });
+
+    res.json({ message: `Status komisi referral diperbarui menjadi ${status}`, commission: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/admin/users (User management for Super Admin)
 router.get('/users', authorizeRoles('SUPER_ADMIN'), async (req, res) => {
   try {

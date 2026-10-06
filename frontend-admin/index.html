@@ -85,6 +85,10 @@
           <i data-lucide="calendar" class="w-4 h-4"></i>
           <span>Booking Survey & Proyek</span>
         </button>
+        <button onclick="switchTab('commissions')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="commissions">
+          <i data-lucide="percent" class="w-4 h-4"></i>
+          <span>Komisi Referral Sales</span>
+        </button>
         <button onclick="switchTab('users')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="users">
           <i data-lucide="users" class="w-4 h-4"></i>
           <span>Manajemen Akun User</span>
@@ -324,6 +328,34 @@
       </div>
     </div>
 
+    <!-- TAB 6: COMMISSIONS -->
+    <div id="tab-commissions" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base text-slate-100">Manajemen Komisi Referral & Sales Canvaser</h3>
+          <p class="text-xs text-slate-400">Verifikasi, persetujuan, dan pencairan komisi perolehan mitra toko baru oleh tim sales lapangan.</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">Sales / Canvaser</th>
+                <th class="p-3">Mitra Direkrut</th>
+                <th class="p-3">Area & Tipe</th>
+                <th class="p-3">Nominal Komisi</th>
+                <th class="p-3">Status Komisi</th>
+                <th class="p-3">Aksi Finance</th>
+              </tr>
+            </thead>
+            <tbody id="commissionsTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- TAB 7: USERS -->
     <div id="tab-users" class="hidden space-y-6">
       <h3 class="font-bold text-base text-slate-100">Manajemen Pengguna & Staf (Super Admin)</h3>
@@ -464,7 +496,7 @@
           <tr class="hover:bg-slate-800/40">
             <td class="p-3">
               <p class="font-bold text-slate-100">${m.storeName || '-'}</p>
-              <p class="text-[10px] text-slate-400">${m.partnerType || '-'} · ${m.description || '-'}</p>
+              <p class="text-[10px] text-slate-400"><span class="px-1.5 py-0.5 rounded bg-slate-800 text-indigo-300 font-semibold">${m.mitraType || m.partnerType || '-'}</span> · ${m.description || '-'}</p>
             </td>
             <td class="p-3">
               <p class="font-medium">${m.user.fullName}</p>
@@ -507,6 +539,75 @@
           await loadStats();
         } else {
           alert('Gagal update mitra status (cek role permission).');
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadCommissionsList() {
+      try {
+        const res = await fetch(`${API_URL}/admin/commissions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('commissionsTableBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        if (!data.commissions || data.commissions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada komisi referral tercatat.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.commissions.map(c => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3">
+              <p class="font-bold text-slate-100">${c.sales?.fullName || '-'}</p>
+              <p class="text-[10px] text-slate-400">${c.sales?.email || '-'} · ${c.sales?.phoneNumber || '-'}</p>
+            </td>
+            <td class="p-3">
+              <p class="font-bold text-emerald-400">${c.referredMitra?.storeName || '-'}</p>
+              <p class="text-[10px] text-slate-400">${c.notes || 'Bonus referral'}</p>
+            </td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300">${c.referredMitra?.workArea || c.referredMitra?.storeCity || '-'}</span>
+            </td>
+            <td class="p-3 font-bold text-slate-100">${formatIDR(c.commissionAmount)}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.status==='PAID'?'bg-emerald-500/10 text-emerald-400':c.status==='APPROVED'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${c.status}</span>
+            </td>
+            <td class="p-3">
+              <div class="flex gap-1.5">
+                ${c.status === 'PENDING' ? `
+                  <button onclick="updateCommissionStatus('${c.id}', 'APPROVED')" class="px-2 py-1 rounded bg-blue-600 hover:bg-blue-700 text-[10px] font-bold text-white">Approve</button>
+                  <button onclick="updateCommissionStatus('${c.id}', 'REJECTED')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-900 text-[10px] text-rose-300">Reject</button>
+                ` : c.status === 'APPROVED' ? `
+                  <button onclick="updateCommissionStatus('${c.id}', 'PAID')" class="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white">Mark Paid</button>
+                ` : `<span class="text-[10px] text-slate-500">Selesai</span>`}
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function updateCommissionStatus(commissionId, status) {
+      try {
+        const res = await fetch(`${API_URL}/admin/commissions/${commissionId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) {
+          alert(`Status komisi berhasil diupdate menjadi ${status}`);
+          await loadCommissionsList();
+        } else {
+          alert('Gagal update status komisi.');
         }
       } catch (err) {
         alert(err.message);
@@ -756,7 +857,7 @@
         }
       });
 
-      ['overview', 'mitra-kyc', 'products', 'orders', 'bookings', 'users'].forEach(t => {
+      ['overview', 'mitra-kyc', 'products', 'orders', 'bookings', 'commissions', 'users'].forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -769,6 +870,7 @@
         products: ['Master Katalog & Produk', 'Kelola produk resmi Sherish Official beserta varian dan stok.'],
         orders: ['Master Manajemen Pesanan Global', 'Monitoring seluruh transaksi customer dan mitra di seluruh Indonesia.'],
         bookings: ['Booking Survey Lokasi & Desain Arsitektur', 'Manajemen jadwal kunjungan on-site dan penugasan arsitek senior.'],
+        commissions: ['Manajemen Komisi Referral & Sales Canvaser', 'Verifikasi, persetujuan, dan pencairan komisi perolehan mitra toko baru.'],
         users: ['Manajemen Pengguna & Staf (Super Admin)', 'Kelola hak akses role RBAC seluruh pengguna internal dan pelanggan.']
       };
 
@@ -776,6 +878,9 @@
         document.getElementById('pageTitle').innerText = titles[tab][0];
         document.getElementById('pageSubtitle').innerText = titles[tab][1];
       }
+
+      if (tab === 'commissions') loadCommissionsList();
+
       lucide.createIcons();
     }
 

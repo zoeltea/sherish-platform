@@ -79,6 +79,10 @@
           <i data-lucide="store" class="w-4 h-4"></i>
           <span>Data Toko / Sales</span>
         </button>
+        <button onclick="switchTab('commissions')" id="salesCommissionNav" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="commissions">
+          <i data-lucide="award" class="w-4 h-4 text-amber-400"></i>
+          <span>Komisi Referral Sales</span>
+        </button>
       </nav>
     </div>
 
@@ -249,6 +253,46 @@
       </div>
     </div>
 
+    <!-- TAB 5: SALES COMMISSIONS -->
+    <div id="tab-commissions" class="hidden space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Komisi Didapatkan</span>
+          <p class="text-2xl font-bold text-emerald-400" id="statSalesTotalCommission">Rp 0</p>
+          <p class="text-[10px] text-slate-400 mt-2">Komisi perolehan mitra baru</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Komisi Menunggu Approval</span>
+          <p class="text-2xl font-bold text-amber-400" id="statSalesPendingCommission">Rp 0</p>
+          <p class="text-[10px] text-slate-400 mt-2">Review tim finance Sherish</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Toko Mitra Direkrut</span>
+          <p class="text-2xl font-bold text-indigo-400" id="statSalesReferralCount">0</p>
+          <p class="text-[10px] text-slate-400 mt-2">Mitra aktif terhubung</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <h3 class="font-bold text-sm text-slate-100">Daftar Komisi & Toko Mitra Yang Direferensikan</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">Nama Mitra Direkrut</th>
+                <th class="p-3">Kota / Wilayah</th>
+                <th class="p-3">Tipe Mitra</th>
+                <th class="p-3">Nominal Bonus</th>
+                <th class="p-3">Status Komisi</th>
+                <th class="p-3">Keterangan</th>
+              </tr>
+            </thead>
+            <tbody id="salesCommissionsBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ================= B2B ORDER MODAL (DP SELECTION) ================= -->
@@ -370,7 +414,45 @@
           await loadStats();
           await loadB2bCatalog();
           await loadOrders();
+          await loadSalesCommissions();
         }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadSalesCommissions() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/sales/commissions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) return;
+
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+        document.getElementById('statSalesTotalCommission').innerText = formatIDR(data.summary.totalCommissions);
+        document.getElementById('statSalesPendingCommission').innerText = formatIDR(data.summary.pendingCommissions);
+        document.getElementById('statSalesReferralCount').innerText = data.summary.totalReferrals;
+
+        const tbody = document.getElementById('salesCommissionsBody');
+        if (!data.commissions || data.commissions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada data komisi perolehan referral.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.commissions.map(c => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3">
+              <p class="font-bold text-slate-100">${c.referredMitra?.storeName || '-'}</p>
+              <p class="text-[10px] text-slate-400">${c.referredMitra?.user?.fullName || '-'} · ${c.referredMitra?.user?.phoneNumber || '-'}</p>
+            </td>
+            <td class="p-3">${c.referredMitra?.workArea || c.referredMitra?.storeCity || '-'}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-indigo-300">${c.referredMitra?.mitraType || '-'}</span></td>
+            <td class="p-3 font-bold text-emerald-400">${formatIDR(c.commissionAmount)}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${c.status==='PAID'?'bg-emerald-500/10 text-emerald-400':c.status==='APPROVED'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${c.status}</span></td>
+            <td class="p-3 text-[11px] text-slate-400">${c.notes || '-'}</td>
+          </tr>
+        `).join('');
       } catch (err) {
         console.error(err);
       }
@@ -650,8 +732,9 @@
         }
       });
 
-      ['dashboard', 'catalog', 'orders', 'profile'].forEach(t => {
-        document.getElementById(`tab-${t}`).classList.add('hidden');
+      ['dashboard', 'catalog', 'orders', 'profile', 'commissions'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.classList.add('hidden');
       });
       document.getElementById(`tab-${tab}`).classList.remove('hidden');
 
@@ -659,7 +742,8 @@
         dashboard: ['Dashboard Toko Mitra', 'Kulakan furnitur pabrik Sherish dengan harga khusus & skema Down Payment (DP).'],
         catalog: ['Katalog Kulakan B2B Pabrik Sherish', 'Pilih produk berkualitas pabrik Sherish dengan margin keuntungan toko.'],
         orders: ['Manajemen Pesanan & Status DP', 'Pantau proses antrean produksi di pabrik dan jadwal pelunasan.'],
-        profile: ['Data Toko / Sales Partner', 'Informasi showroom mitra terdaftar dan benefit tier diskon.']
+        profile: ['Data Toko / Sales Partner', 'Informasi showroom mitra terdaftar dan benefit tier diskon.'],
+        commissions: ['Komisi Referral & Sales Partner', 'Pantau perolehan komisi dan toko mitra baru yang Anda daftarkan.']
       };
 
       document.getElementById('pageTitle').innerText = titles[tab][0];

@@ -46,7 +46,41 @@ async function main() {
     }
   });
 
-  // Mitra Toko / Sales Partner
+    // Mitra Toko / Sales Partner
+  const salesCanvaserUser = await prisma.user.upsert({
+    where: { email: 'budi.sales@sherish.co.id' },
+    update: {},
+    create: {
+      email: 'budi.sales@sherish.co.id',
+      passwordHash,
+      fullName: 'Budi Cahyadi (Sales Canvaser Bandung)',
+      phoneNumber: '08122334455',
+      role: 'MITRA',
+      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80'
+    }
+  });
+
+  const salesProfile = await prisma.mitraProfile.upsert({
+    where: { userId: salesCanvaserUser.id },
+    update: {},
+    create: {
+      userId: salesCanvaserUser.id,
+      storeName: 'Sherish Canvaser Bandung Raya',
+      partnerType: 'INDEPENDENT_SALES',
+      mitraType: 'SALES_CANVASER',
+      storeCity: 'Bandung',
+      storeAddress: 'Jl. Pasirkaliki No. 45, Bandung',
+      workArea: 'Bandung',
+      description: 'Sales Canvaser & Field Representative Resmi Area Bandung Raya',
+      status: 'VERIFIED',
+      discountTier: 0.25,
+      bankName: 'BCA',
+      bankAccountNo: '8830998811',
+      bankAccountName: 'Budi Cahyadi'
+    }
+  });
+
+  // Mitra Toko / Toko Rekanan
   const mitraUser = await prisma.user.upsert({
     where: { email: 'mitra.toko@interiorhub.id' },
     update: {},
@@ -78,12 +112,16 @@ async function main() {
   const mitraProfile = await prisma.mitraProfile.upsert({
     where: { userId: mitraUser.id },
     update: {
-      workArea: 'Bandung'
+      workArea: 'Bandung',
+      mitraType: 'MITRA_TOKO',
+      referralSalesId: salesCanvaserUser.id
     },
     create: {
       userId: mitraUser.id,
       storeName: 'Living Sanctuary Gallery (Toko Rekanan Bandung)',
       partnerType: 'TOKO_FURNITUR',
+      mitraType: 'MITRA_TOKO',
+      referralSalesId: salesCanvaserUser.id,
       storeCity: 'Bandung',
       storeAddress: 'Jl. R.E. Martadinata No. 128, Riau, Bandung',
       workArea: 'Bandung',
@@ -95,6 +133,23 @@ async function main() {
       bankAccountName: 'Hendra Saputra'
     }
   });
+
+  // Sample Referral Commission
+  const existingCommission = await prisma.referralCommission.findFirst({
+    where: { salesId: salesCanvaserUser.id, referredMitraId: mitraProfile.id }
+  });
+  if (!existingCommission) {
+    await prisma.referralCommission.create({
+      data: {
+        salesId: salesCanvaserUser.id,
+        referredMitraId: mitraProfile.id,
+        commissionAmount: 667500, // 5% dari order perdana Rp 13.350.000
+        commissionRate: 0.05,
+        status: 'APPROVED',
+        notes: 'Komisi onboarding dan transaksi perdana Toko Mitra Bandung'
+      }
+    });
+  }
 
   // 3. Create Categories
   const categories = [

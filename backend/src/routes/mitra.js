@@ -110,6 +110,66 @@ router.get('/stats', authenticateToken, authorizeRoles('MITRA'), async (req, res
   }
 });
 
+// GET /api/mitra/sales/commissions (Get commissions for sales partner)
+router.get('/sales/commissions', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const salesId = (req.user.role === 'SUPER_ADMIN' && req.query.salesId) ? req.query.salesId : req.user.id;
+    
+    const commissions = await prisma.referralCommission.findMany({
+      where: { salesId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        referredMitra: {
+          include: {
+            user: { select: { fullName: true, email: true, phoneNumber: true } }
+          }
+        }
+      }
+    });
+
+    const totalCommissions = commissions.reduce((sum, c) => sum + (c.status === 'PAID' || c.status === 'APPROVED' ? c.commissionAmount : 0), 0);
+    const pendingCommissions = commissions.reduce((sum, c) => sum + (c.status === 'PENDING' ? c.commissionAmount : 0), 0);
+    const paidCommissions = commissions.reduce((sum, c) => sum + (c.status === 'PAID' ? c.commissionAmount : 0), 0);
+
+    res.json({
+      summary: {
+        totalCommissions,
+        pendingCommissions,
+        paidCommissions,
+        totalReferrals: commissions.length
+      },
+      commissions
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/mitra/sales/commission/:id/approve (Admin/Sales supervisor approves commission)
+router.patch('/sales/commission/:id/approve', authenticateToken, authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN', 'MITRA'), async (req, res) => {
+  try {
+    const { status = 'APPROVED', notes } = req.body;
+    const updateData = { status };
+    if (status === 'PAID') {
+      updateData.paidAt = new Date();
+    }
+    if (notes) updateData.notes = notes;
+
+    const updated = await prisma.referralCommission.update({
+      where: { id: req.params.id },
+      data: updateData,
+      include: {
+        sales: { select: { fullName: true, email: true } },
+        referredMitra: { select: { storeName: true } }
+      }
+    });
+
+    res.json({ message: `Status komisi referral diperbarui menjadi ${status}`, commission: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // PATCH /api/mitra/profile (Update mitra profile data)
 router.patch('/profile', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
   try {

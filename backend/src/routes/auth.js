@@ -18,6 +18,8 @@ router.post('/register', async (req, res) => {
       role,
       storeName,
       partnerType,
+      mitraType,
+      referralSalesId,
       storeCity,
       storeAddress,
       workArea,
@@ -37,6 +39,9 @@ router.post('/register', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const assignedRole = role === 'MITRA' ? 'MITRA' : 'CUSTOMER';
 
+    const validMitraTypes = ['OUTLET_INTERNAL', 'MITRA_TOKO', 'RESELLER', 'SALES_CANVASER', 'DIGITAL_MARKETING'];
+    const resolvedMitraType = validMitraTypes.includes(mitraType) ? mitraType : 'MITRA_TOKO';
+
     const user = await prisma.user.create({
       data: {
         email,
@@ -48,6 +53,8 @@ router.post('/register', async (req, res) => {
           create: {
             storeName: storeName || `${fullName} Store`,
             partnerType: partnerType || 'TOKO_FURNITUR',
+            mitraType: resolvedMitraType,
+            referralSalesId: referralSalesId || null,
             storeCity: storeCity || 'Indonesia',
             storeAddress: storeAddress || '-',
             workArea: workArea || storeCity || 'Bandung',
@@ -57,8 +64,26 @@ router.post('/register', async (req, res) => {
           }
         } : undefined
       },
-      include: { mitraProfile: true }
+      include: {
+        mitraProfile: {
+          include: { referralSales: { select: { fullName: true, email: true, phoneNumber: true } } }
+        }
+      }
     });
+
+    // If referralSalesId is provided and valid, auto-create a referral commission entry (reward on onboarding/first order)
+    if (assignedRole === 'MITRA' && user.mitraProfile && referralSalesId) {
+      await prisma.referralCommission.create({
+        data: {
+          salesId: referralSalesId,
+          referredMitraId: user.mitraProfile.id,
+          commissionAmount: 500000, // IDR 500.000 standard referral onboarding bonus
+          commissionRate: 0.05,
+          status: 'PENDING',
+          notes: `Referral bonus pendaftaran mitra baru: ${user.mitraProfile.storeName}`
+        }
+      });
+    }
 
     const token = jwt.sign(
       { userId: user.id, email: user.email, role: user.role },
@@ -125,6 +150,87 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: `Gagal login: ${err.message}` });
+  }
+});
+
+// GET /api/users/sales (Get available sales/canvasers by work area or all)
+// GET /api/auth/sales (Get available sales/canvasers by work area or all)
+router.get('/sales', async (req, res) => {
+  try {
+    const { workArea } = req.query;
+    const where = {
+      role: 'MITRA',
+      isActive: true,
+      mitraProfile: {
+        mitraType: 'SALES_CANVASER'
+      }
+    };
+
+    if (workArea) {
+      where.mitraProfile.workArea = { contains: workArea, mode: 'insensitive' };
+    }
+
+    const salesList = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        mitraProfile: {
+          select: {
+            id: true,
+            storeName: true,
+            workArea: true,
+            storeCity: true
+          }
+        }
+      }
+    });
+
+    res.json({ count: salesList.length, sales: salesList });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/auth/sales (Get available sales/canvasers by work area or all)
+router.get('/sales', async (req, res) => {
+  try {
+    const { workArea } = req.query;
+    const where = {
+      role: 'MITRA',
+      isActive: true,
+      mitraProfile: {
+        mitraType: 'SALES_CANVASER'
+      }
+    };
+
+    if (workArea) {
+      where.mitraProfile.workArea = { contains: workArea, mode: 'insensitive' };
+    }
+
+    const salesList = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phoneNumber: true,
+        mitraProfile: {
+          select: {
+            id: true,
+            storeName: true,
+            workArea: true,
+            storeCity: true
+          }
+        }
+      }
+    });
+
+    res.json({ count: salesList.length, sales: salesList });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
