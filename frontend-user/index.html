@@ -41,6 +41,9 @@
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
+  <!-- Reusable Order Timeline Component -->
+  <script src="components/order-timeline.js"></script>
+
   <style>
     .glass-nav { background: rgba(250, 248, 245, 0.94); backdrop-filter: blur(12px); }
     .hero-gradient { background: linear-gradient(180deg, rgba(44,34,27,0.4) 0%, rgba(44,34,27,0.85) 100%); }
@@ -974,6 +977,10 @@
 
     // ================= 7. DEDICATED ORDER DETAIL PAGE VIEW =================
     function getStepperHtml(status) {
+      if (window.SherishTimeline && typeof window.SherishTimeline.render === 'function') {
+        return window.SherishTimeline.render(status, { theme: 'earth' });
+      }
+
       const isCancelled = status === 'CANCELLED';
       if (isCancelled) {
         return `
@@ -983,69 +990,7 @@
         `;
       }
 
-      let step1 = 'pending', step2 = 'pending', step3 = 'pending', step4 = 'pending';
-      const s = status || 'PENDING_PAYMENT';
-      if (['DP_CONFIRMED', 'MATERIALS_PREPARATION', 'IN_PRODUCTION', 'QUALITY_CHECK', 'READY_FOR_SHIPMENT', 'FINAL_PAYMENT_CONFIRMED', 'SHIPPED', 'COMPLETED'].includes(s)) {
-        step1 = 'done';
-      } else {
-        step1 = 'active';
-      }
-
-      if (['MATERIALS_PREPARATION', 'IN_PRODUCTION'].includes(s)) {
-        step2 = 'active';
-      } else if (['QUALITY_CHECK', 'READY_FOR_SHIPMENT', 'FINAL_PAYMENT_CONFIRMED', 'SHIPPED', 'COMPLETED'].includes(s)) {
-        step2 = 'done';
-      }
-
-      if (['QUALITY_CHECK', 'READY_FOR_SHIPMENT', 'FINAL_PAYMENT_CONFIRMED'].includes(s)) {
-        step3 = 'active';
-      } else if (['SHIPPED', 'COMPLETED'].includes(s)) {
-        step3 = 'done';
-      }
-
-      if (s === 'SHIPPED') {
-        step4 = 'active';
-      } else if (s === 'COMPLETED') {
-        step4 = 'done';
-      }
-
-      const renderStepCircle = (stepState, num, icon) => {
-        if (stepState === 'done') {
-          return `<div class="w-8 h-8 rounded-full stepper-done flex items-center justify-center mx-auto font-bold"><i data-lucide="check" class="w-4 h-4"></i></div>`;
-        } else if (stepState === 'active') {
-          return `<div class="w-8 h-8 rounded-full stepper-active flex items-center justify-center mx-auto font-bold animate-pulse"><i data-lucide="${icon || 'hammer'}" class="w-4 h-4"></i></div>`;
-        } else {
-          return `<div class="w-8 h-8 rounded-full bg-earth-200 text-earth-600 flex items-center justify-center mx-auto font-bold">${num}</div>`;
-        }
-      };
-
-      return `
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs pt-4">
-          <div class="space-y-2">
-            ${renderStepCircle(step1, 1, 'check')}
-            <p class="font-bold ${step1 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">1. Pembayaran</p>
-            <p class="text-[10px] ${step1 === 'done' ? 'text-emerald-600 font-semibold' : step1 === 'active' ? 'text-amber-600 font-semibold' : 'text-earth-400'}">${step1 === 'done' ? 'Terverifikasi' : step1 === 'active' ? 'Menunggu Bayar' : 'Belum Mulai'}</p>
-          </div>
-
-          <div class="space-y-2">
-            ${renderStepCircle(step2, 2, 'hammer')}
-            <p class="font-bold ${step2 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">2. Produksi Workshop</p>
-            <p class="text-[10px] ${step2 === 'done' ? 'text-emerald-600' : step2 === 'active' ? 'text-sage-800 font-semibold' : 'text-earth-400'}">${step2 === 'done' ? 'Selesai Dirakit' : step2 === 'active' ? 'Sedang Dirakit' : 'Antrean Pabrik'}</p>
-          </div>
-
-          <div class="space-y-2">
-            ${renderStepCircle(step3, 3, 'search')}
-            <p class="font-bold ${step3 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">3. Quality Check</p>
-            <p class="text-[10px] ${step3 === 'done' ? 'text-emerald-600' : step3 === 'active' ? 'text-sage-800 font-semibold' : 'text-earth-400'}">${step3 === 'done' ? 'Lolos QC & Siap' : step3 === 'active' ? 'Inspeksi & Finishing' : 'Menunggu QC'}</p>
-          </div>
-
-          <div class="space-y-2">
-            ${renderStepCircle(step4, 4, 'truck')}
-            <p class="font-bold ${step4 !== 'pending' ? 'text-earth-900' : 'text-earth-500'}">4. Pengiriman & Rakit</p>
-            <p class="text-[10px] ${step4 === 'done' ? 'text-emerald-600 font-semibold' : step4 === 'active' ? 'text-sage-800 font-semibold' : 'text-earth-400'}">${step4 === 'done' ? 'Diterima Customer' : step4 === 'active' ? 'Sedang Dikirim' : 'Instalasi di Lokasi'}</p>
-          </div>
-        </div>
-      `;
+      return `<div class="text-xs text-earth-500 py-4 text-center">Status pesanan: ${status}</div>`;
     }
 
     function updateOrderStatusUI(order) {

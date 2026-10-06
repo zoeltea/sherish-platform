@@ -30,14 +30,32 @@
     }
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Reusable Order Timeline Component -->
+  <script src="components/order-timeline.js"></script>
   <style>
     .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.7); }
   </style>
 </head>
-<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex">
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col md:flex-row">
+
+  <!-- Mobile Topbar Header -->
+  <header class="md:hidden bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-md">
+        S
+      </div>
+      <div>
+        <h1 class="font-bold text-xs tracking-wider text-slate-100">SHERISH ADMIN</h1>
+        <span class="text-[9px] text-indigo-400 font-semibold uppercase" id="mobileRoleBadge">Super Admin</span>
+      </div>
+    </div>
+    <button onclick="toggleMobileAdminMenu()" class="p-2 rounded-lg bg-slate-800 text-slate-200">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+  </header>
 
   <!-- ================= SIDEBAR ================= -->
-  <aside id="sidebar" class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-5 shrink-0">
+  <aside id="sidebar" class="w-full md:w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col justify-between p-5 shrink-0">
     <div>
       <!-- Logo & Admin Role Switcher Header -->
       <div class="flex items-center gap-3 mb-6 px-2">
@@ -118,10 +136,10 @@
   </aside>
 
   <!-- ================= MAIN CONTENT ================= -->
-  <main class="flex-1 overflow-y-auto p-8">
+  <main class="flex-1 overflow-y-auto p-4 sm:p-8">
     
     <!-- Topbar -->
-    <div class="flex items-center justify-between pb-6 mb-8 border-b border-slate-800">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-800 gap-4">
       <div>
         <h2 class="text-xl font-bold text-slate-100" id="pageTitle">Global Enterprise Overview</h2>
         <p class="text-xs text-slate-400" id="pageSubtitle">Monitoring performa e-commerce, ekosistem mitra, dan proyek arsitektur.</p>
@@ -443,6 +461,11 @@
     let token = localStorage.getItem('sherish_admin_token');
     let currentAdminEmail = 'superadmin@sherish.co.id';
 
+    function toggleMobileAdminMenu() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('hidden');
+    }
+
     async function init() {
       lucide.createIcons();
       await loginAsRole(currentAdminEmail);
@@ -472,7 +495,10 @@
     function renderAdminProfile(user) {
       document.getElementById('adminName').innerText = user.fullName;
       document.getElementById('adminEmail').innerText = user.email;
-      document.getElementById('currentRoleBadge').innerText = user.role.replace('ADMIN_', '') + ' Access';
+      const roleText = user.role.replace('ADMIN_', '') + ' Access';
+      document.getElementById('currentRoleBadge').innerText = roleText;
+      const mobBadge = document.getElementById('mobileRoleBadge');
+      if (mobBadge) mobBadge.innerText = roleText;
     }
 
     async function changeAdminRole(email) {
@@ -721,7 +747,20 @@
         const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
         if (!data.invoices || data.invoices.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada data invoice.</td></tr>';
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-12 text-slate-400">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                  </div>
+                  <p class="font-medium text-slate-300">Belum ada faktur piutang atau tagihan.</p>
+                  <p class="text-[11px] text-slate-500">Tagihan DP atau Pelunasan akan muncul otomatis ketika order masuk.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          lucide.createIcons();
           return;
         }
 
