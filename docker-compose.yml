@@ -1,0 +1,67 @@
+services:
+  sherish-db:
+    image: postgres:16-alpine
+    container_name: sherish-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sherish
+      POSTGRES_PASSWORD: sherish_secret_password_2026
+      POSTGRES_DB: sherish_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - sherish_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sherish -d sherish_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  sherish-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sherish-backend-api
+    restart: unless-stopped
+    depends_on:
+      sherish-db:
+        condition: service_healthy
+    environment:
+      PORT: 8000
+      DATABASE_URL: postgresql://sherish:sherish_secret_password_2026@sherish-db:5432/sherish_db?schema=public
+      JWT_SECRET: sherish_jwt_super_secret_key_2026_zen_living
+      STORAGE_DIR: /app/storage/uploads
+    ports:
+      - "8095:8000"
+    volumes:
+      - ./storage/uploads:/app/storage/uploads
+
+  sherish-fe-user:
+    build:
+      context: ./frontend-user
+      dockerfile: Dockerfile
+    container_name: sherish-fe-user
+    restart: unless-stopped
+    ports:
+      - "8096:80"
+
+  sherish-fe-mitra:
+    build:
+      context: ./frontend-mitra
+      dockerfile: Dockerfile
+    container_name: sherish-fe-mitra
+    restart: unless-stopped
+    ports:
+      - "8097:80"
+
+  sherish-fe-admin:
+    build:
+      context: ./frontend-admin
+      dockerfile: Dockerfile
+    container_name: sherish-fe-admin
+    restart: unless-stopped
+    ports:
+      - "8098:80"
+
+volumes:
+  sherish_pgdata:

@@ -1,0 +1,225 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  MITRA
+  ADMIN_CATALOG
+  ADMIN_FINANCE
+  ADMIN_QUALITY
+  ADMIN_CS
+  SUPER_ADMIN
+}
+
+enum MitraStatus {
+  PENDING_VERIFICATION
+  VERIFIED
+  SUSPENDED
+  REJECTED
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderType {
+  RETAIL
+  MITRA_B2B
+}
+
+enum PaymentScheme {
+  FULL_PAYMENT
+  DOWN_PAYMENT_30
+  DOWN_PAYMENT_50
+}
+
+enum PaymentStatus {
+  UNPAID
+  DP_PENDING_VERIFICATION
+  DP_PAID
+  FINAL_PENDING_VERIFICATION
+  FULLY_PAID
+}
+
+enum OrderStatus {
+  PENDING_PAYMENT
+  DP_CONFIRMED
+  MATERIALS_PREPARATION
+  IN_PRODUCTION
+  QUALITY_CHECK
+  READY_FOR_SHIPMENT
+  FINAL_PAYMENT_CONFIRMED
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  SURVEY_SCHEDULED
+  SURVEY_COMPLETED
+  PROPOSAL_SENT
+  CANCELLED
+}
+
+model User {
+  id            String       @id @default(uuid())
+  email         String       @unique
+  passwordHash  String
+  fullName      String
+  phoneNumber   String?
+  role          Role         @default(CUSTOMER)
+  avatarUrl     String?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  mitraProfile  MitraProfile?
+  orders        Order[]
+  bookings      ServiceBooking[]
+  reviews       Review[]
+}
+
+model MitraProfile {
+  id              String       @id @default(uuid())
+  userId          String       @unique
+  user            User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeName       String       // Nama Toko / Studio Desain / Nama Sales
+  partnerType     String       @default("TOKO_FURNITUR") // TOKO_FURNITUR, INTERIOR_DESIGNER, KONTRAKTOR, INDEPENDENT_SALES
+  storeCity       String
+  storeAddress    String
+  description     String?
+  status          MitraStatus  @default(PENDING_VERIFICATION)
+  discountTier    Float        @default(0.25) // Default 25% margin potongan harga dari harga retail
+  bankName        String?
+  bankAccountNo   String?
+  bankAccountName String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  orders          Order[]
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  imageUrl    String?
+  products    Product[]
+  createdAt   DateTime  @default(now())
+}
+
+model Product {
+  id             String        @id @default(uuid())
+  title          String
+  slug           String        @unique
+  description    String
+  basePrice      Float         // Harga Retail Resmi (B2C)
+  mitraPrice     Float         // Harga Modal Khusus Mitra (B2B / Wholesale)
+  categorySlug   String
+  category       Category      @relation(fields: [categorySlug], references: [slug])
+  isSherishOfficial Boolean    @default(true) // Sherish sebagai produsen utama
+  status         ProductStatus @default(PUBLISHED)
+  materials      String[]      // e.g. ["Jati Solid Perhutani", "Sungkai", "Walnut"]
+  finishings     String[]      // e.g. ["Natural Matte", "Dark Walnut", "Bleached Teak"]
+  defaultLength  Float?        // cm
+  defaultWidth   Float?        // cm
+  defaultHeight  Float?        // cm
+  allowCustomDim Boolean       @default(true)
+  images         String[]
+  stock          Int           @default(10)
+  rating         Float         @default(5.0)
+  reviewCount    Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  orderItems     OrderItem[]
+  reviews        Review[]
+}
+
+model Order {
+  id              String        @id @default(uuid())
+  orderNumber     String        @unique
+  userId          String
+  user            User          @relation(fields: [userId], references: [id])
+  mitraId         String?
+  mitra           MitraProfile? @relation(fields: [mitraId], references: [id])
+  
+  orderType       OrderType     @default(RETAIL)
+  paymentScheme   PaymentScheme @default(FULL_PAYMENT)
+  paymentStatus   PaymentStatus @default(UNPAID)
+  
+  totalAmount     Float         // Total Nilai Belanja
+  dpAmount        Float         @default(0.0) // Nilai DP yang harus dibayar
+  remainingAmount Float         @default(0.0) // Sisa Pelunasan
+  
+  dpPaidAt        DateTime?
+  finalPaidAt     DateTime?
+  dpProofUrl      String?
+  finalProofUrl   String?
+  
+  status          OrderStatus   @default(PENDING_PAYMENT)
+  shippingAddress String
+  shippingCity    String
+  recipientName   String
+  recipientPhone  String
+  trackingNumber  String?
+  notes           String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  items           OrderItem[]
+}
+
+model OrderItem {
+  id                String   @id @default(uuid())
+  orderId           String
+  order             Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product  @relation(fields: [productId], references: [id])
+  quantity          Int      @default(1)
+  unitPrice         Float    // basePrice untuk Customer, mitraPrice untuk Mitra
+  selectedMaterial  String?
+  selectedFinishing String?
+  customDimLength   Float?
+  customDimWidth    Float?
+  customDimHeight   Float?
+  subtotal          Float
+}
+
+model ServiceBooking {
+  id            String        @id @default(uuid())
+  bookingNumber String        @unique
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  serviceType   String
+  projectAddress String
+  preferredDate DateTime
+  budgetRange   String?
+  status        BookingStatus @default(PENDING)
+  assignedArchitect String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  rating    Int      @default(5)
+  comment   String?
+  createdAt DateTime @default(now())
+}

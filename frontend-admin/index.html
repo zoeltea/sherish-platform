@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sherish Command Center — Multi-Role Admin Backoffice</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              500: '#6366F1',
+              600: '#4F46E5',
+              700: '#4338CA',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.7); }
+  </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar" class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-5 shrink-0">
+    <div>
+      <!-- Logo & Admin Role Switcher Header -->
+      <div class="flex items-center gap-3 mb-6 px-2">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-lg shadow-indigo-500/20">
+          S
+        </div>
+        <div>
+          <h1 class="font-bold text-sm tracking-wider text-slate-100">SHERISH ADMIN</h1>
+          <span class="text-[10px] text-indigo-400 font-semibold uppercase" id="currentRoleBadge">Super Admin</span>
+        </div>
+      </div>
+
+      <!-- Simulated Role Switcher (For Demo & Verification) -->
+      <div class="mb-6 p-3 rounded-xl bg-slate-800/80 border border-slate-700/70">
+        <label class="block text-[10px] uppercase font-bold text-slate-400 mb-1.5 flex items-center gap-1">
+          <i data-lucide="shield-check" class="w-3 h-3 text-indigo-400"></i>
+          <span>Role Switcher (RBAC):</span>
+        </label>
+        <select id="roleSelector" onchange="changeAdminRole(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-[11px] text-slate-200 font-medium focus:outline-none focus:border-indigo-500">
+          <option value="superadmin@sherish.co.id">Super Admin (Full Control)</option>
+          <option value="catalog@sherish.co.id">Catalog & Design Admin</option>
+          <option value="finance@sherish.co.id">Finance & Settlement Admin</option>
+        </select>
+      </div>
+
+      <!-- Dynamic Navigation Menu based on RBAC -->
+      <nav class="space-y-1 text-xs font-medium" id="sidebarMenu">
+        <button onclick="switchTab('overview')" class="nav-tab active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 bg-slate-800 transition-all font-bold" data-tab="overview">
+          <i data-lucide="activity" class="w-4 h-4 text-indigo-400"></i>
+          <span>Global Overview</span>
+        </button>
+        <button onclick="switchTab('mitra-kyc')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="mitra-kyc">
+          <i data-lucide="user-check" class="w-4 h-4"></i>
+          <span>Verifikasi Mitra</span>
+        </button>
+        <button onclick="switchTab('products')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="products">
+          <i data-lucide="layers" class="w-4 h-4"></i>
+          <span>Katalog Produk</span>
+        </button>
+        <button onclick="switchTab('orders')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="orders">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span>Pesanan Furnitur</span>
+        </button>
+        <button onclick="switchTab('bookings')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="bookings">
+          <i data-lucide="calendar" class="w-4 h-4"></i>
+          <span>Booking Survey & Proyek</span>
+        </button>
+        <button onclick="switchTab('users')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="users">
+          <i data-lucide="users" class="w-4 h-4"></i>
+          <span>Manajemen Akun User</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Admin User Info Footer -->
+    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-8 h-8 rounded-full bg-indigo-900/60 border border-indigo-500/40 text-indigo-300 flex items-center justify-center font-bold text-xs" id="adminAvatar">
+          SA
+        </div>
+        <div class="truncate text-xs">
+          <p class="font-medium text-slate-200 truncate" id="adminName">Bambang S.</p>
+          <p class="text-[10px] text-slate-400 truncate" id="adminEmail">superadmin@sherish.co.id</p>
+        </div>
+      </div>
+      <button onclick="handleLogout()" class="p-1.5 text-slate-400 hover:text-rose-400" title="Logout">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 overflow-y-auto p-8">
+    
+    <!-- Topbar -->
+    <div class="flex items-center justify-between pb-6 mb-8 border-b border-slate-800">
+      <div>
+        <h2 class="text-xl font-bold text-slate-100" id="pageTitle">Global Enterprise Overview</h2>
+        <p class="text-xs text-slate-400" id="pageSubtitle">Monitoring performa e-commerce, ekosistem mitra, dan proyek arsitektur.</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-medium">
+          <span class="w-2 h-2 rounded-full bg-indigo-400 animate-pulse"></span>
+          <span>Core API Connected</span>
+        </span>
+      </div>
+    </div>
+
+    <!-- TAB 1: OVERVIEW -->
+    <div id="tab-overview" class="space-y-6">
+      <!-- Metrics Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Omset Platform (Gross)</span>
+          <p class="text-2xl font-bold text-slate-100" id="mTotalRevenue">Rp 0</p>
+          <p class="text-[10px] text-emerald-400 mt-2 font-medium" id="mTotalProducts">0 Produk Aktif</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Pesanan Furnitur</span>
+          <p class="text-2xl font-bold text-slate-100" id="mTotalOrders">0</p>
+          <p class="text-[10px] text-indigo-400 mt-2">Storefront & Mitra Orders</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Booking Survey & Desain</span>
+          <p class="text-2xl font-bold text-slate-100" id="mTotalBookings">0</p>
+          <p class="text-[10px] text-amber-400 mt-2">Proyek Rancang Bangun Aktif</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Mitra Terdaftar</span>
+          <p class="text-2xl font-bold text-slate-100" id="mTotalMitra">0</p>
+          <p class="text-[10px] text-rose-400 mt-2" id="mPendingMitra">0 Menunggu Verifikasi</p>
+        </div>
+      </div>
+
+      <!-- Two Columns: Recent Orders & Recent Bookings -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Orders -->
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-sm text-slate-200">Pesanan Furnitur Terkini</h3>
+            <button onclick="switchTab('orders')" class="text-xs text-indigo-400 hover:underline">Kelola Semua</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                <tr>
+                  <th class="p-2.5">No Order</th>
+                  <th class="p-2.5">Pelanggan</th>
+                  <th class="p-2.5">Total</th>
+                  <th class="p-2.5">Status</th>
+                </tr>
+              </thead>
+              <tbody id="overviewOrdersBody" class="divide-y divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="glass-card rounded-2xl p-6 space-y-4">
+          <div class="flex justify-between items-center">
+            <h3 class="font-bold text-sm text-slate-200">Booking Survey Arsitek Baru</h3>
+            <button onclick="switchTab('bookings')" class="text-xs text-indigo-400 hover:underline">Kelola Semua</button>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+                <tr>
+                  <th class="p-2.5">No Tiket</th>
+                  <th class="p-2.5">Klien</th>
+                  <th class="p-2.5">Layanan</th>
+                  <th class="p-2.5">Status</th>
+                </tr>
+              </thead>
+              <tbody id="overviewBookingsBody" class="divide-y divide-slate-800"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: MITRA VERIFICATION -->
+    <div id="tab-mitra-kyc" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base text-slate-100">Verifikasi Mitra Toko & Sales Partner</h3>
+          <p class="text-xs text-slate-400">Validasi legalitas dan kelayakan toko mitra sebelum dapat melakukan pemesanan B2B.</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">Nama Toko / Mitra</th>
+                <th class="p-3">Pemilik & Kontak</th>
+                <th class="p-3">Kota / Lokasi</th>
+                <th class="p-3">Rekening Bank</th>
+                <th class="p-3">Status Verifikasi</th>
+                <th class="p-3">Aksi Approval</th>
+              </tr>
+            </thead>
+            <tbody id="mitraTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: PRODUCTS -->
+    <div id="tab-products" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base text-slate-100">Master Katalog & Kurasi Produk</h3>
+          <p class="text-xs text-slate-400">Setujui produk mitra yang diajukan atau kelola katalog resmi Sherish Official.</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">Produk</th>
+                <th class="p-3">Kategori</th>
+                <th class="p-3">Tipe Penjual</th>
+                <th class="p-3">Harga Dasar</th>
+                <th class="p-3">Status Kurasi</th>
+                <th class="p-3">Moderasi Status</th>
+              </tr>
+            </thead>
+            <tbody id="productsTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: ORDERS -->
+    <div id="tab-orders" class="hidden space-y-6">
+      <h3 class="font-bold text-base text-slate-100">Master Manajemen Pesanan Global</h3>
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">No Order</th>
+                <th class="p-3">Pelanggan / Mitra</th>
+                <th class="p-3">Toko Mitra / Channel</th>
+                <th class="p-3">Total Nilai</th>
+                <th class="p-3">Status Saat Ini</th>
+                <th class="p-3">Update Status</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: BOOKINGS -->
+    <div id="tab-bookings" class="hidden space-y-6">
+      <h3 class="font-bold text-base text-slate-100">Booking Survey Lokasi & Desain Arsitektur</h3>
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">No Tiket</th>
+                <th class="p-3">Klien</th>
+                <th class="p-3">Layanan Diminta</th>
+                <th class="p-3">Tanggal Survey</th>
+                <th class="p-3">Arsitek Ditugaskan</th>
+                <th class="p-3">Status & Assign</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: PAYOUTS -->
+    <div id="tab-payouts" class="hidden space-y-6">
+      <h3 class="font-bold text-base text-slate-100">Rekonsiliasi & Approval Pencairan Dana Mitra</h3>
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">Tanggal</th>
+                <th class="p-3">Nama Mitra</th>
+                <th class="p-3">Nominal Penarikan</th>
+                <th class="p-3">Tujuan Transfer</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Aksi Finance</th>
+              </tr>
+            </thead>
+            <tbody id="payoutsTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: USERS -->
+    <div id="tab-users" class="hidden space-y-6">
+      <h3 class="font-bold text-base text-slate-100">Manajemen Pengguna & Staf (Super Admin)</h3>
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">Nama Pengguna</th>
+                <th class="p-3">Email</th>
+                <th class="p-3">No HP</th>
+                <th class="p-3">Role Akses</th>
+                <th class="p-3">Status Akun</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script>
+    // Dynamic API URL Resolution
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8095/api'
+      : `http://${window.location.hostname}:8095/api`;
+    let token = localStorage.getItem('sherish_admin_token');
+    let currentAdminEmail = 'superadmin@sherish.co.id';
+
+    async function init() {
+      lucide.createIcons();
+      await loginAsRole(currentAdminEmail);
+    }
+
+    async function loginAsRole(email) {
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: 'Sherish123!' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          token = data.token;
+          localStorage.setItem('sherish_admin_token', token);
+          renderAdminProfile(data.user);
+          await loadAllAdminData();
+        } else {
+          alert(`Gagal login role: ${data.error}`);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderAdminProfile(user) {
+      document.getElementById('adminName').innerText = user.fullName;
+      document.getElementById('adminEmail').innerText = user.email;
+      document.getElementById('currentRoleBadge').innerText = user.role.replace('ADMIN_', '') + ' Access';
+    }
+
+    async function changeAdminRole(email) {
+      currentAdminEmail = email;
+      await loginAsRole(email);
+    }
+
+    async function loadAllAdminData() {
+      await loadStats();
+      await loadMitraList();
+      await loadProducts();
+      await loadOrders();
+      await loadBookings();
+      await loadUsers();
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_URL}/admin/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const m = data.metrics;
+          const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+          document.getElementById('mTotalRevenue').innerText = formatIDR(m.totalRevenue);
+          document.getElementById('mTotalProducts').innerText = `${m.totalProducts} Produk Aktif`;
+          document.getElementById('mTotalOrders').innerText = m.totalOrders;
+          document.getElementById('mTotalBookings').innerText = m.totalBookings;
+          document.getElementById('mTotalMitra').innerText = m.totalMitra;
+          document.getElementById('mPendingMitra').innerText = `${m.pendingMitraVerification} Menunggu Verifikasi`;
+
+          renderOverviewTables(data.recentOrders, data.recentBookings);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderOverviewTables(orders, bookings) {
+      const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+      
+      document.getElementById('overviewOrdersBody').innerHTML = (orders || []).map(o => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-indigo-300 font-bold">${o.orderNumber}</td>
+          <td class="p-2.5">${o.user?.fullName || '-'}</td>
+          <td class="p-2.5 font-bold text-slate-200">${formatIDR(o.totalAmount)}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-semibold">${o.status}</span></td>
+        </tr>
+      `).join('') || '<tr><td colspan="4" class="text-center py-4 text-slate-500">Tidak ada data.</td></tr>';
+
+      document.getElementById('overviewBookingsBody').innerHTML = (bookings || []).map(b => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-2.5 font-mono text-indigo-300 font-bold">${b.bookingNumber}</td>
+          <td class="p-2.5">${b.user?.fullName || '-'}</td>
+          <td class="p-2.5 truncate max-w-[150px]">${b.serviceType}</td>
+          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] bg-amber-500/10 text-amber-400 font-semibold">${b.status}</span></td>
+        </tr>
+      `).join('') || '<tr><td colspan="4" class="text-center py-4 text-slate-500">Tidak ada data.</td></tr>';
+    }
+
+    async function loadMitraList() {
+      try {
+        const res = await fetch(`${API_URL}/admin/mitra`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('mitraTableBody');
+
+        if (!data.mitras || data.mitras.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada mitra terdaftar.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.mitras.map(m => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3">
+              <p class="font-bold text-slate-100">${m.storeName || '-'}</p>
+              <p class="text-[10px] text-slate-400">${m.partnerType || '-'} · ${m.description || '-'}</p>
+            </td>
+            <td class="p-3">
+              <p class="font-medium">${m.user.fullName}</p>
+              <p class="text-[10px] text-slate-400">${m.user.email} · ${m.user.phoneNumber || '-'}</p>
+            </td>
+            <td class="p-3">${m.storeCity || '-'}</td>
+            <td class="p-3 font-mono text-[11px]">${m.bankName || 'BCA'} - ${m.bankAccountNo || '-'}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${m.status==='VERIFIED'?'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20':'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${m.status}</span>
+            </td>
+            <td class="p-3">
+              <div class="flex gap-1.5">
+                <button onclick="updateMitraStatus('${m.id}', 'VERIFIED')" class="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white">Setujui</button>
+                <button onclick="updateMitraStatus('${m.id}', 'SUSPENDED')" class="px-2 py-1 rounded bg-slate-800 hover:bg-rose-900 text-[10px] text-rose-300">Suspend</button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function updateMitraStatus(mitraId, status) {
+      try {
+        const res = await fetch(`${API_URL}/admin/mitra/${mitraId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) {
+          alert(`Status mitra berhasil diubah ke ${status}`);
+          await loadMitraList();
+          await loadStats();
+        } else {
+          alert('Gagal update mitra status (cek role permission).');
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await fetch(`${API_URL}/products`);
+        const data = await res.json();
+        const tbody = document.getElementById('productsTableBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        tbody.innerHTML = (data.products || []).map(p => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 flex items-center gap-3">
+              <img src="${p.images[0]}" class="w-10 h-10 object-cover rounded-lg" />
+              <div>
+                <p class="font-bold text-slate-100">${p.title}</p>
+                <p class="text-[10px] text-slate-400">Stok: ${p.stock}</p>
+              </div>
+            </td>
+            <td class="p-3">${p.categorySlug}</td>
+            <td class="p-3">
+              ${p.isSherishOfficial ? '<span class="text-indigo-400 font-bold">Sherish Official</span>' : `<span class="text-emerald-400">${p.mitra?.storeName || 'Mitra'}</span>`}
+            </td>
+            <td class="p-3 font-bold text-slate-200">${formatIDR(p.basePrice)}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${p.status==='PUBLISHED'?'bg-emerald-500/10 text-emerald-400':'bg-amber-500/10 text-amber-400'}">${p.status}</span>
+            </td>
+            <td class="p-3">
+              <select onchange="updateProductStatus('${p.id}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200">
+                <option value="PUBLISHED" ${p.status==='PUBLISHED'?'selected':''}>Published (Tayang)</option>
+                <option value="PENDING_REVIEW" ${p.status==='PENDING_REVIEW'?'selected':''}>Pending Review</option>
+                <option value="REJECTED" ${p.status==='REJECTED'?'selected':''}>Rejected</option>
+                <option value="ARCHIVED" ${p.status==='ARCHIVED'?'selected':''}>Archived</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function updateProductStatus(prodId, status) {
+      try {
+        const res = await fetch(`${API_URL}/products/${prodId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) {
+          alert(`Status produk berhasil diubah menjadi ${status}`);
+          await loadProducts();
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadOrders() {
+      try {
+        const res = await fetch(`${API_URL}/orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('ordersTableBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        tbody.innerHTML = (data.orders || []).map(o => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-mono font-bold text-indigo-300">${o.orderNumber}</td>
+            <td class="p-3">
+              <p class="font-bold">${o.recipientName}</p>
+              <p class="text-[10px] text-slate-400">${o.shippingCity}</p>
+            </td>
+            <td class="p-3">${o.mitra?.storeName || 'Retail Direct'}</td>
+            <td class="p-3 font-bold text-slate-100">${formatIDR(o.totalAmount)}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-bold">${o.status}</span></td>
+            <td class="p-3">
+              <select onchange="updateAdminOrderStatus('${o.id}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200">
+                <option value="PENDING_PAYMENT" ${o.status==='PENDING_PAYMENT'?'selected':''}>Pending Payment</option>
+                <option value="PAYMENT_VERIFIED" ${o.status==='PAYMENT_VERIFIED'?'selected':''}>Payment Verified</option>
+                <option value="IN_PRODUCTION" ${o.status==='IN_PRODUCTION'?'selected':''}>In Production</option>
+                <option value="QUALITY_CHECK" ${o.status==='QUALITY_CHECK'?'selected':''}>Quality Check</option>
+                <option value="SHIPPED" ${o.status==='SHIPPED'?'selected':''}>Shipped</option>
+                <option value="COMPLETED" ${o.status==='COMPLETED'?'selected':''}>Completed</option>
+              </select>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function updateAdminOrderStatus(orderId, status) {
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status })
+        });
+        if (res.ok) {
+          alert(`Status order berhasil diubah`);
+          await loadOrders();
+          await loadStats();
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadBookings() {
+      try {
+        const res = await fetch(`${API_URL}/services/bookings`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('bookingsTableBody');
+
+        tbody.innerHTML = (data.bookings || []).map(b => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-mono font-bold text-indigo-300">${b.bookingNumber}</td>
+            <td class="p-3">
+              <p class="font-bold">${b.user.fullName}</p>
+              <p class="text-[10px] text-slate-400">${b.user.phoneNumber}</p>
+            </td>
+            <td class="p-3">${b.serviceType}</td>
+            <td class="p-3">${new Date(b.preferredDate).toLocaleDateString('id-ID')}</td>
+            <td class="p-3 font-medium text-amber-400">${b.assignedArchitect || 'Belum Ditugaskan'}</td>
+            <td class="p-3">
+              <button onclick="assignArchitect('${b.id}')" class="px-2.5 py-1 rounded bg-indigo-600 hover:bg-indigo-700 text-[10px] font-bold text-white">Assign Arsitek</button>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function assignArchitect(bookingId) {
+      const architect = prompt('Nama Arsitek Senior yang ditugaskan:', 'Ir. Hendra Wijaya, IAI');
+      if (!architect) return;
+
+      try {
+        const res = await fetch(`${API_URL}/services/bookings/${bookingId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: 'SURVEY_SCHEDULED', assignedArchitect: architect })
+        });
+        if (res.ok) {
+          alert('Arsitek berhasil ditugaskan untuk survey on-site!');
+          await loadBookings();
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadPayouts() {
+      try {
+        const res = await fetch(`${API_URL}/admin/payouts`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('payoutsTableBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        tbody.innerHTML = (data.payouts || []).map(p => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 text-[10px] text-slate-400">${new Date(p.createdAt).toLocaleDateString('id-ID')}</td>
+            <td class="p-3 font-bold">${p.mitra?.workshopName}</td>
+            <td class="p-3 font-bold text-emerald-400">${formatIDR(p.amount)}</td>
+            <td class="p-3 font-mono text-[11px]">${p.bankAccount}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/10 text-amber-400">${p.status}</span></td>
+            <td class="p-3">
+              <button onclick="approvePayout('${p.id}')" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white">Approve & Transfer</button>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada pengajuan payout.</td></tr>';
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function approvePayout(payoutId) {
+      const ref = prompt('Masukkan Nomor Referensi Bank / Bukti Transfer:', `TRF-BCA-${Date.now().toString().slice(-6)}`);
+      if (!ref) return;
+
+      try {
+        const res = await fetch(`${API_URL}/admin/payouts/${payoutId}/status`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ status: 'TRANSFERRED', referenceNo: ref })
+        });
+        if (res.ok) {
+          alert('Pencairan dana mitra berhasil disetujui & dicatat!');
+          await loadPayouts();
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const res = await fetch(`${API_URL}/admin/users`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('usersTableBody');
+
+        tbody.innerHTML = (data.users || []).map(u => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-bold text-slate-200">${u.fullName}</td>
+            <td class="p-3 font-mono text-[11px] text-slate-400">${u.email}</td>
+            <td class="p-3">${u.phoneNumber || '-'}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">${u.role}</span></td>
+            <td class="p-3"><span class="text-emerald-400 font-bold text-[10px]">${u.isActive ? 'Aktif' : 'Non-Aktif'}</span></td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        if (b.getAttribute('data-tab') === tab) {
+          b.className = 'nav-tab active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 bg-slate-800 transition-all font-bold';
+        } else {
+          b.className = 'nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all font-medium';
+        }
+      });
+
+      ['overview', 'mitra-kyc', 'products', 'orders', 'bookings', 'users'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.classList.add('hidden');
+      });
+      const activeEl = document.getElementById(`tab-${tab}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+
+      const titles = {
+        overview: ['Global Enterprise Overview', 'Monitoring performa e-commerce, ekosistem mitra, dan proyek arsitektur.'],
+        'mitra-kyc': ['Verifikasi Mitra Toko & Sales Partner', 'Validasi legalitas dan kelayakan mitra sebelum dapat melakukan order B2B.'],
+        products: ['Master Katalog & Produk', 'Kelola produk resmi Sherish Official beserta varian dan stok.'],
+        orders: ['Master Manajemen Pesanan Global', 'Monitoring seluruh transaksi customer dan mitra di seluruh Indonesia.'],
+        bookings: ['Booking Survey Lokasi & Desain Arsitektur', 'Manajemen jadwal kunjungan on-site dan penugasan arsitek senior.'],
+        users: ['Manajemen Pengguna & Staf (Super Admin)', 'Kelola hak akses role RBAC seluruh pengguna internal dan pelanggan.']
+      };
+
+      if (titles[tab]) {
+        document.getElementById('pageTitle').innerText = titles[tab][0];
+        document.getElementById('pageSubtitle').innerText = titles[tab][1];
+      }
+      lucide.createIcons();
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('sherish_admin_token');
+      location.reload();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

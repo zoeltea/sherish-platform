@@ -1,0 +1,1288 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth h-full bg-earth-50">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sherish — Solusi Rancang Bangun Arsitektural & Interior Menenangkan</title>
+  
+  <meta name="description" content="Sherish Cipta Interindo — Platform E-Commerce Furnitur Berkualitas, Desain Interior & Rancang Bangun Arsitektural Menenangkan sejak 2003." />
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..700;1,400..700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            serif: ['"Playfair Display"', 'serif'],
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            earth: {
+              50: '#FAF8F5', 100: '#F4EFEA', 200: '#E8DED4', 300: '#D5C4B4',
+              400: '#B89F8B', 500: '#9B7D67', 600: '#7E634F', 700: '#644D3D',
+              800: '#4C3B2F', 900: '#2C221B', 950: '#1A1410'
+            },
+            sage: {
+              50: '#F4F7F4', 100: '#E5EDE5', 200: '#CDDCCD', 500: '#7D9D85',
+              600: '#65846D', 700: '#4F6C56', 800: '#3D5443', 900: '#233327'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    .glass-nav { background: rgba(250, 248, 245, 0.94); backdrop-filter: blur(12px); }
+    .hero-gradient { background: linear-gradient(180deg, rgba(44,34,27,0.4) 0%, rgba(44,34,27,0.85) 100%); }
+    .card-shadow { box-shadow: 0 15px 35px -10px rgba(126, 99, 79, 0.08); }
+    .active-nav { color: #2C221B; font-weight: 700; border-bottom: 2px solid #7D9D85; }
+    .stepper-active { background-color: #7D9D85; color: white; border-color: #7D9D85; }
+    .stepper-done { background-color: #2C221B; color: white; border-color: #2C221B; }
+  </style>
+</head>
+<body class="bg-earth-50 text-earth-900 font-sans antialiased min-h-full flex flex-col selection:bg-sage-200 selection:text-sage-900">
+
+  <!-- ================= HEADER & NAVIGATION ================= -->
+  <header class="sticky top-0 z-40 glass-nav border-b border-earth-200/60">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
+      <!-- Brand Logo -->
+      <a href="#/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-full bg-earth-900 text-earth-50 flex items-center justify-center font-serif text-xl font-bold group-hover:bg-sage-800 transition-colors">
+          S
+        </div>
+        <div class="flex flex-col">
+          <span class="font-serif font-bold text-lg tracking-wider text-earth-900 leading-none">SHERISH</span>
+          <span class="text-[9px] tracking-widest text-earth-600 uppercase font-semibold mt-1">Est. 2003 · Cipta Interindo</span>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-earth-700">
+        <a href="#/" class="nav-link hover:text-earth-950 transition-all py-2" id="nav-home">Beranda</a>
+        <a href="#/catalog" class="nav-link hover:text-earth-950 transition-all py-2" id="nav-catalog">Katalog Produk</a>
+        <a href="#/services" class="nav-link hover:text-earth-950 transition-all py-2" id="nav-services">Layanan Rancang Bangun</a>
+        <a href="#/portal-mitra" onclick="window.open(`http://${window.location.hostname}:8097`, '_blank'); return false;" class="text-sage-800 font-semibold hover:text-sage-900 flex items-center gap-1">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>Portal Mitra B2B</span>
+        </a>
+      </nav>
+
+      <!-- User Actions & Cart -->
+      <div class="flex items-center gap-3">
+        <!-- Account / Profile Button -->
+        <a href="#/profile" id="userAccountBtn" class="flex items-center gap-2 text-xs font-semibold text-earth-800 bg-earth-100/80 hover:bg-earth-200 px-3.5 py-2 rounded-full transition-all border border-earth-200">
+          <i data-lucide="user" class="w-4 h-4 text-earth-700"></i>
+          <span id="userAccountName">Masuk / Akun</span>
+        </a>
+
+        <!-- Cart Button -->
+        <a href="#/cart" class="relative p-2.5 rounded-full bg-earth-900 text-earth-50 hover:bg-sage-800 transition-all shadow-sm flex items-center justify-center">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span id="headerCartCount" class="absolute -top-1 -right-1 bg-sage-500 text-earth-950 font-bold text-[10px] w-5 h-5 rounded-full flex items-center justify-center">0</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ================= DYNAMIC PAGE ROUTER CONTAINER ================= -->
+  <main id="app" class="flex-1">
+    <!-- View content will be dynamically rendered here based on URL hash -->
+  </main>
+
+  <!-- ================= AUTH MODAL (LOGIN / REGISTER) ================= -->
+  <div id="authModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-earth-50 rounded-3xl max-w-md w-full p-8 relative border border-earth-200 card-shadow">
+      <button onclick="closeAuthModal()" class="absolute top-6 right-6 p-2 rounded-full bg-earth-200 hover:bg-earth-300 text-earth-800">
+        <i data-lucide="x" class="w-4 h-4"></i>
+      </button>
+
+      <div class="mb-6">
+        <span class="text-[10px] text-sage-800 uppercase font-bold tracking-widest">Akun Pelanggan</span>
+        <h3 class="font-serif text-2xl font-medium text-earth-900 mt-1" id="authModalTitle">Masuk ke Sherish</h3>
+        <p class="text-xs text-earth-600 mt-1" id="authModalSub">Akses keranjang belanja, status pesanan, dan riwayat transaksi Anda.</p>
+      </div>
+
+      <form id="authForm" onsubmit="handleAuthSubmit(event)" class="space-y-4 text-xs">
+        <div id="authNameField" class="hidden">
+          <label class="block text-earth-700 font-semibold mb-1">Nama Lengkap</label>
+          <input type="text" id="authFullName" placeholder="Zul Yatman" class="w-full bg-white border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900 focus:outline-none focus:border-sage-500" />
+        </div>
+        <div>
+          <label class="block text-earth-700 font-semibold mb-1">Email</label>
+          <input type="email" id="authEmail" required value="zul.customer@gmail.com" class="w-full bg-white border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900 focus:outline-none focus:border-sage-500" />
+        </div>
+        <div>
+          <label class="block text-earth-700 font-semibold mb-1">Password</label>
+          <input type="password" id="authPassword" required value="Sherish123!" class="w-full bg-white border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900 focus:outline-none focus:border-sage-500" />
+        </div>
+        <button type="submit" class="w-full py-3 rounded-full bg-earth-900 hover:bg-sage-800 text-earth-50 font-bold text-xs transition-all shadow-md mt-2" id="authSubmitBtn">
+          Masuk Sekarang
+        </button>
+      </form>
+
+      <div class="mt-5 pt-4 border-t border-earth-200 text-center text-xs text-earth-600">
+        <span id="authTogglePrompt">Belum punya akun?</span>
+        <button onclick="toggleAuthMode()" class="text-sage-800 font-bold hover:underline ml-1" id="authToggleBtn">Daftar Akun Baru</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FOOTER ================= -->
+  <footer class="bg-earth-950 text-earth-400 py-14 px-6 text-xs border-t border-earth-900 mt-auto">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-full bg-earth-800 text-earth-100 flex items-center justify-center font-serif text-sm font-bold">S</div>
+        <span class="font-serif text-base text-earth-100 tracking-wider">PT SHERISH CIPTA INTERINDO</span>
+      </div>
+      <p>© 2026 Sherish. Solusi Rancang Bangun Arsitektural & Interior yang Menenangkan.</p>
+      <div class="flex items-center gap-6">
+        <a href="#/portal-mitra" onclick="window.open(`http://${window.location.hostname}:8097`, '_blank'); return false;" class="hover:text-earth-100 font-semibold text-sage-400">Portal Mitra B2B</a>
+        <a href="#/admin-portal" onclick="window.open(`http://${window.location.hostname}:8098`, '_blank'); return false;" class="hover:text-earth-100 font-semibold text-earth-300">Admin Backoffice</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ================= SCRIPT & CLIENT ROUTER ================= -->
+  <script>
+    // Dynamic API URL Resolution
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8095/api'
+      : `http://${window.location.hostname}:8095/api`;
+    let productsCache = [];
+    let cart = JSON.parse(localStorage.getItem('sherish_cart') || '[]');
+    let currentUser = JSON.parse(localStorage.getItem('sherish_user') || 'null');
+    let isRegisterMode = false;
+
+    // ================= CLIENT ROUTER =================
+    window.addEventListener('hashchange', router);
+    window.addEventListener('load', async () => {
+      await fetchProductsCache();
+      updateHeaderState();
+      router();
+    });
+
+    async function fetchProductsCache() {
+      try {
+        const res = await fetch(`${API_URL}/products`);
+        const data = await res.json();
+        productsCache = data.products || [];
+      } catch (err) {
+        console.error('Failed to load products:', err);
+      }
+    }
+
+    function router() {
+      const hash = window.location.hash || '#/';
+      const app = document.getElementById('app');
+      window.scrollTo(0, 0);
+
+      // Highlight active navbar
+      document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active-nav'));
+
+      if (hash === '#/' || hash === '') {
+        document.getElementById('nav-home')?.classList.add('active-nav');
+        renderHomePage(app);
+      } else if (hash.startsWith('#/catalog')) {
+        document.getElementById('nav-catalog')?.classList.add('active-nav');
+        renderCatalogPage(app);
+      } else if (hash.startsWith('#/product/')) {
+        const slug = hash.replace('#/product/', '');
+        renderProductDetailPage(app, slug);
+      } else if (hash === '#/cart') {
+        renderCartPage(app);
+      } else if (hash === '#/checkout') {
+        renderCheckoutPage(app);
+      } else if (hash.startsWith('#/payment/')) {
+        const orderNumber = hash.replace('#/payment/', '');
+        renderPaymentWaitingPage(app, orderNumber);
+      } else if (hash.startsWith('#/orders/')) {
+        const orderNumber = hash.replace('#/orders/', '');
+        renderOrderDetailPage(app, orderNumber);
+      } else if (hash === '#/profile') {
+        renderProfilePage(app);
+      } else if (hash === '#/services') {
+        document.getElementById('nav-services')?.classList.add('active-nav');
+        renderServicesPage(app);
+      } else {
+        app.innerHTML = '<div class="max-w-7xl mx-auto py-24 text-center"><h2 class="text-2xl font-serif">Halaman Tidak Ditemukan</h2><a href="#/" class="text-sage-800 underline mt-4 block">Kembali ke Beranda</a></div>';
+      }
+
+      lucide.createIcons();
+    }
+
+    function formatIDR(val) {
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+    }
+
+    function updateHeaderState() {
+      const count = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+      document.getElementById('headerCartCount').innerText = count;
+
+      const nameEl = document.getElementById('userAccountName');
+      if (currentUser) {
+        nameEl.innerText = currentUser.fullName.split(' ')[0];
+      } else {
+        nameEl.innerText = 'Masuk / Akun';
+      }
+    }
+
+    // ================= 1. HOME PAGE VIEW =================
+    function renderHomePage(container) {
+      const featured = productsCache.slice(0, 3);
+
+      container.innerHTML = `
+        <!-- Hero Section -->
+        <section class="relative min-h-[85vh] flex items-center justify-center px-6 overflow-hidden">
+          <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=2000&q=85" alt="Sherish Interior" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 hero-gradient"></div>
+          </div>
+
+          <div class="relative z-10 max-w-4xl mx-auto text-center text-earth-50 py-16">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-earth-100/15 backdrop-blur-md border border-earth-100/20 text-earth-100 text-xs tracking-wider uppercase mb-6">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5 text-sage-200"></i>
+              <span>Solusi Rancang Bangun & Furnitur Menenangkan</span>
+            </div>
+
+            <h1 class="font-serif text-4xl sm:text-5xl md:text-6xl font-light leading-tight mb-6">
+              Keindahan yang Fungsional, <br />
+              <span class="italic font-normal text-earth-200">Presisi & Menenangkan</span>
+            </h1>
+
+            <p class="text-base sm:text-lg text-earth-100/90 font-light max-w-2xl mx-auto mb-10 leading-relaxed">
+              Sejak 2003, PT Sherish Cipta Interindo memproduksi furnitur kayu berkualitas ekspor dan menghadirkan rancang bangun interior bernuansa hening.
+            </p>
+
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+              <a href="#/catalog" class="w-full sm:w-auto px-8 py-4 rounded-full bg-earth-100 text-earth-900 hover:bg-white font-medium text-sm sm:text-base flex items-center justify-center gap-2 shadow-lg transition-all">
+                <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                <span>Jelajahi Katalog Furnitur</span>
+              </a>
+              <a href="#/services" class="w-full sm:w-auto px-8 py-4 rounded-full bg-white/15 hover:bg-white/25 border border-white/30 text-white backdrop-blur-sm font-medium text-sm sm:text-base flex items-center justify-center gap-2 transition-all">
+                <i data-lucide="calendar" class="w-4 h-4"></i>
+                <span>Booking Survey Arsitek</span>
+              </a>
+            </div>
+          </div>
+        </section>
+
+        <!-- Curated Section -->
+        <section class="py-20 px-6 max-w-7xl mx-auto">
+          <div class="flex justify-between items-end mb-10">
+            <div>
+              <span class="text-xs font-semibold uppercase tracking-widest text-earth-600 mb-2 block">Pilihan Utama</span>
+              <h2 class="font-serif text-3xl font-light text-earth-900">Koleksi Furnitur Terlaris</h2>
+            </div>
+            <a href="#/catalog" class="text-xs font-bold text-sage-800 hover:underline flex items-center gap-1">
+              <span>Lihat Semua Katalog</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            ${featured.map(p => `
+              <div class="group bg-white rounded-3xl overflow-hidden border border-earth-200 card-shadow transition-all duration-300 hover:-translate-y-1">
+                <div class="h-64 overflow-hidden relative">
+                  <img src="${p.images[0]}" alt="${p.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <div class="absolute top-4 left-4 bg-earth-900/90 text-earth-50 text-[10px] px-2.5 py-1 rounded-full font-medium">Sherish Official</div>
+                </div>
+                <div class="p-6">
+                  <span class="text-[10px] uppercase tracking-wider text-earth-500 font-bold">${p.categorySlug}</span>
+                  <h3 class="font-serif text-lg font-medium text-earth-900 mt-1 mb-2 truncate">${p.title}</h3>
+                  <p class="text-xs text-earth-600 line-clamp-2 mb-4">${p.description}</p>
+                  
+                  <div class="flex items-center justify-between pt-4 border-t border-earth-100">
+                    <div>
+                      <span class="text-[10px] text-earth-500 block">Harga Retail Resmi:</span>
+                      <span class="font-serif text-base font-bold text-earth-900">${formatIDR(p.basePrice)}</span>
+                    </div>
+                    <a href="#/product/${p.slug}" class="px-4 py-2 rounded-full bg-earth-900 text-earth-50 hover:bg-sage-800 text-xs font-semibold transition-all">
+                      Detail & Beli
+                    </a>
+                  </div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        </section>
+      `;
+    }
+
+    // ================= 2. DEDICATED CATALOG PAGE VIEW =================
+    function renderCatalogPage(container) {
+      let filtered = [...productsCache];
+
+      container.innerHTML = `
+        <div class="bg-earth-100/60 py-8 px-6 border-b border-earth-200">
+          <div class="max-w-7xl mx-auto">
+            <div class="text-xs text-earth-500 mb-2 flex items-center gap-1.5">
+              <a href="#/" class="hover:underline">Beranda</a>
+              <span>/</span>
+              <span class="text-earth-900 font-medium">Katalog Produk</span>
+            </div>
+            <h1 class="font-serif text-3xl sm:text-4xl font-light text-earth-900">Katalog Furnitur & Elemen Ruang</h1>
+            <p class="text-xs text-earth-600 mt-1">Koleksi furnitur kayu solid presisi pabrik Sherish dengan opsi kustomisasi dimensi.</p>
+          </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-6 py-12">
+          <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <!-- Sidebar Filter -->
+            <aside class="space-y-6">
+              <!-- Search -->
+              <div class="bg-white p-5 rounded-2xl border border-earth-200 card-shadow">
+                <label class="block text-xs font-bold uppercase tracking-wider text-earth-800 mb-2">Cari Furnitur</label>
+                <div class="relative">
+                  <input type="text" id="catalogSearch" oninput="applyCatalogFilters()" placeholder="Cari meja, kursi, ranjang..." class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3.5 py-2.5 text-xs text-earth-900 focus:outline-none focus:border-sage-500 pl-9" />
+                  <i data-lucide="search" class="w-4 h-4 text-earth-400 absolute left-3 top-3"></i>
+                </div>
+              </div>
+
+              <!-- Categories -->
+              <div class="bg-white p-5 rounded-2xl border border-earth-200 card-shadow space-y-2 text-xs">
+                <span class="block font-bold uppercase tracking-wider text-earth-800 mb-3">Kategori Ruang</span>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="catFilter" value="all" checked onchange="applyCatalogFilters()" class="accent-earth-900" />
+                  <span>Semua Kategori</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="catFilter" value="living-room" onchange="applyCatalogFilters()" class="accent-earth-900" />
+                  <span>Living Room</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="catFilter" value="dining-kitchen" onchange="applyCatalogFilters()" class="accent-earth-900" />
+                  <span>Dining & Kitchen</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="catFilter" value="bedroom" onchange="applyCatalogFilters()" class="accent-earth-900" />
+                  <span>Bedroom Sanctuary</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input type="radio" name="catFilter" value="workspace" onchange="applyCatalogFilters()" class="accent-earth-900" />
+                  <span>Workspace & Studio</span>
+                </label>
+              </div>
+
+              <!-- Price Sort -->
+              <div class="bg-white p-5 rounded-2xl border border-earth-200 card-shadow text-xs">
+                <span class="block font-bold uppercase tracking-wider text-earth-800 mb-3">Urutkan Harga</span>
+                <select id="catalogSort" onchange="applyCatalogFilters()" class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3 py-2 text-xs">
+                  <option value="default">Paling Sesuai</option>
+                  <option value="price_asc">Harga: Termurah</option>
+                  <option value="price_desc">Harga: Termahal</option>
+                </select>
+              </div>
+            </aside>
+
+            <!-- Product Grid List -->
+            <div class="lg:col-span-3">
+              <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Injected via applyCatalogFilters -->
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      applyCatalogFilters();
+    }
+
+    function applyCatalogFilters() {
+      const search = document.getElementById('catalogSearch')?.value.toLowerCase() || '';
+      const cat = document.querySelector('input[name="catFilter"]:checked')?.value || 'all';
+      const sort = document.getElementById('catalogSort')?.value || 'default';
+
+      let res = productsCache.filter(p => {
+        const matchSearch = p.title.toLowerCase().includes(search) || p.description.toLowerCase().includes(search);
+        const matchCat = cat === 'all' || p.categorySlug === cat;
+        return matchSearch && matchCat;
+      });
+
+      if (sort === 'price_asc') res.sort((a, b) => a.basePrice - b.basePrice);
+      if (sort === 'price_desc') res.sort((a, b) => b.basePrice - a.basePrice);
+
+      const grid = document.getElementById('catalogGrid');
+      if (!grid) return;
+
+      if (res.length === 0) {
+        grid.innerHTML = '<div class="col-span-3 text-center py-16 text-earth-500 text-xs">Tidak ada produk yang sesuai dengan filter pencarian.</div>';
+        return;
+      }
+
+      grid.innerHTML = res.map(p => `
+        <div class="group bg-white rounded-3xl overflow-hidden border border-earth-200 card-shadow flex flex-col justify-between transition-all duration-300 hover:-translate-y-1">
+          <div>
+            <div class="h-56 overflow-hidden relative">
+              <img src="${p.images[0]}" alt="${p.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div class="absolute top-3 left-3 bg-earth-900/90 text-earth-50 text-[10px] px-2.5 py-1 rounded-full font-medium">Sherish Official</div>
+            </div>
+            <div class="p-5">
+              <span class="text-[9px] uppercase tracking-wider text-earth-500 font-bold">${p.categorySlug}</span>
+              <h3 class="font-serif text-base font-medium text-earth-900 mt-1 mb-1 truncate">${p.title}</h3>
+              <p class="text-xs text-earth-600 line-clamp-2 mb-3">${p.description}</p>
+              <div class="text-sm font-serif font-bold text-earth-900">${formatIDR(p.basePrice)}</div>
+            </div>
+          </div>
+          <div class="p-5 pt-0">
+            <a href="#/product/${p.slug}" class="w-full py-2.5 rounded-full bg-earth-100 hover:bg-earth-900 hover:text-earth-50 text-earth-900 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+              <span>Lihat Detail Produk</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </a>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    // ================= 3. DEDICATED PRODUCT DETAIL PAGE (PDP) =================
+    function renderProductDetailPage(container, slug) {
+      const p = productsCache.find(x => x.slug === slug) || productsCache[0];
+      if (!p) {
+        container.innerHTML = '<div class="py-24 text-center">Produk tidak ditemukan.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="max-w-7xl mx-auto px-6 py-10">
+          <!-- Breadcrumb -->
+          <div class="text-xs text-earth-500 mb-6 flex items-center gap-1.5">
+            <a href="#/" class="hover:underline">Beranda</a>
+            <span>/</span>
+            <a href="#/catalog" class="hover:underline">Katalog</a>
+            <span>/</span>
+            <span class="text-earth-900 font-medium">${p.title}</span>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+            <!-- Product Gallery -->
+            <div class="space-y-4">
+              <div class="rounded-3xl overflow-hidden border border-earth-200 card-shadow bg-white h-[450px]">
+                <img id="mainPdpImage" src="${p.images[0]}" alt="${p.title}" class="w-full h-full object-cover" />
+              </div>
+              <div class="flex gap-3 overflow-x-auto">
+                ${p.images.map((img, i) => `
+                  <button onclick="document.getElementById('mainPdpImage').src='${img}'" class="w-20 h-20 rounded-2xl overflow-hidden border-2 border-earth-200 hover:border-sage-600 shrink-0">
+                    <img src="${img}" class="w-full h-full object-cover" />
+                  </button>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Product Specs & Configuration -->
+            <div class="space-y-6">
+              <div>
+                <span class="text-[10px] text-sage-800 font-bold uppercase tracking-widest">${p.categorySlug} · Sherish Produsen Resmi</span>
+                <h1 class="font-serif text-3xl sm:text-4xl font-medium text-earth-900 mt-1">${p.title}</h1>
+                <div class="text-2xl sm:text-3xl font-serif font-bold text-earth-900 mt-3">${formatIDR(p.basePrice)}</div>
+              </div>
+
+              <p class="text-xs text-earth-600 leading-relaxed">${p.description}</p>
+
+              <!-- Option: Materials -->
+              <div>
+                <label class="block text-xs font-bold text-earth-800 mb-2">Pilihan Kayu Solid:</label>
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                  ${p.materials.map((m, idx) => `
+                    <label class="p-3 rounded-2xl border border-earth-300 text-center cursor-pointer hover:border-earth-900 transition-all has-[:checked]:bg-earth-900 has-[:checked]:text-earth-50 has-[:checked]:border-earth-900">
+                      <input type="radio" name="pdpMat" value="${m}" ${idx===0?'checked':''} class="hidden" />
+                      <span class="font-medium">${m}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Option: Finishing -->
+              <div>
+                <label class="block text-xs font-bold text-earth-800 mb-2">Pilihan Finishing Warna:</label>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  ${p.finishings.map((f, idx) => `
+                    <label class="p-3 rounded-2xl border border-earth-300 text-center cursor-pointer hover:border-earth-900 transition-all has-[:checked]:bg-earth-900 has-[:checked]:text-earth-50 has-[:checked]:border-earth-900">
+                      <input type="radio" name="pdpFin" value="${f}" ${idx===0?'checked':''} class="hidden" />
+                      <span class="font-medium">${f}</span>
+                    </label>
+                  `).join('')}
+                </div>
+              </div>
+
+              <!-- Custom Dimensions -->
+              ${p.allowCustomDim ? `
+                <div class="p-5 rounded-2xl bg-earth-100/70 border border-earth-200 space-y-2">
+                  <span class="text-xs font-bold text-earth-800 block">Kustomisasi Dimensi Ukuran (cm):</span>
+                  <div class="grid grid-cols-3 gap-3 text-xs">
+                    <div>
+                      <span class="text-[10px] text-earth-500 block mb-1">Panjang:</span>
+                      <input type="number" id="pdpDimLength" value="${p.defaultLength || 100}" class="w-full bg-white border border-earth-300 rounded-xl p-2 text-center font-bold" />
+                    </div>
+                    <div>
+                      <span class="text-[10px] text-earth-500 block mb-1">Lebar:</span>
+                      <input type="number" id="pdpDimWidth" value="${p.defaultWidth || 60}" class="w-full bg-white border border-earth-300 rounded-xl p-2 text-center font-bold" />
+                    </div>
+                    <div>
+                      <span class="text-[10px] text-earth-500 block mb-1">Tinggi:</span>
+                      <input type="number" id="pdpDimHeight" value="${p.defaultHeight || 75}" class="w-full bg-white border border-earth-300 rounded-xl p-2 text-center font-bold" />
+                    </div>
+                  </div>
+                </div>
+              ` : ''}
+
+              <!-- Actions: Add to Cart & Buy Now -->
+              <div class="flex gap-4 pt-4 border-t border-earth-200">
+                <button onclick="handleAddToCart('${p.id}', false)" class="flex-1 py-4 rounded-full bg-earth-100 hover:bg-earth-200 text-earth-900 font-bold text-xs flex items-center justify-center gap-2 border border-earth-300 transition-all">
+                  <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+                  <span>Masukkan ke Keranjang</span>
+                </button>
+                <button onclick="handleAddToCart('${p.id}', true)" class="flex-1 py-4 rounded-full bg-earth-900 hover:bg-sage-800 text-earth-50 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                  <span>Beli Sekarang</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function handleAddToCart(productId, directCheckout = false) {
+      const p = productsCache.find(x => x.id === productId);
+      if (!p) return;
+
+      const material = document.querySelector('input[name="pdpMat"]:checked')?.value || p.materials[0];
+      const finishing = document.querySelector('input[name="pdpFin"]:checked')?.value || p.finishings[0];
+      const length = parseFloat(document.getElementById('pdpDimLength')?.value || p.defaultLength);
+      const width = parseFloat(document.getElementById('pdpDimWidth')?.value || p.defaultWidth);
+      const height = parseFloat(document.getElementById('pdpDimHeight')?.value || p.defaultHeight);
+
+      const item = {
+        productId: p.id,
+        title: p.title,
+        slug: p.slug,
+        price: p.basePrice,
+        image: p.images[0],
+        material,
+        finishing,
+        length,
+        width,
+        height,
+        quantity: 1
+      };
+
+      cart.push(item);
+      localStorage.setItem('sherish_cart', JSON.stringify(cart));
+      updateHeaderState();
+
+      if (directCheckout) {
+        window.location.hash = '#/checkout';
+      } else {
+        window.location.hash = '#/cart';
+      }
+    }
+
+    // ================= 4. DEDICATED CART PAGE VIEW =================
+    function renderCartPage(container) {
+      const subtotal = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
+      container.innerHTML = `
+        <div class="max-w-7xl mx-auto px-6 py-10">
+          <h1 class="font-serif text-3xl font-light text-earth-900 mb-8">Keranjang Belanja Anda</h1>
+
+          ${cart.length === 0 ? `
+            <div class="bg-white rounded-3xl p-16 text-center border border-earth-200 card-shadow max-w-lg mx-auto space-y-4">
+              <i data-lucide="shopping-bag" class="w-12 h-12 text-earth-300 mx-auto"></i>
+              <h3 class="font-serif text-xl font-medium text-earth-900">Keranjang Masih Kosong</h3>
+              <p class="text-xs text-earth-500">Anda belum memilih furnitur untuk ditambahkan ke keranjang.</p>
+              <a href="#/catalog" class="inline-block px-6 py-3 rounded-full bg-earth-900 text-earth-50 text-xs font-bold">Mulai Belanja</a>
+            </div>
+          ` : `
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+              <!-- Cart Items List -->
+              <div class="lg:col-span-2 space-y-4">
+                ${cart.map((item, idx) => `
+                  <div class="bg-white rounded-2xl p-5 border border-earth-200 card-shadow flex gap-5 items-center">
+                    <img src="${item.image}" class="w-24 h-24 object-cover rounded-xl shrink-0" />
+                    <div class="flex-1 text-xs">
+                      <span class="text-[9px] text-sage-800 font-bold uppercase">Sherish Official</span>
+                      <h4 class="font-serif text-base font-medium text-earth-900 mt-0.5">${item.title}</h4>
+                      <p class="text-[11px] text-earth-500 mt-1">${item.material} · ${item.finishing} (${item.length}x${item.width}x${item.height} cm)</p>
+                      <div class="text-sm font-bold text-earth-900 mt-2">${formatIDR(item.price)}</div>
+                    </div>
+                    <div class="flex flex-col items-end gap-3 shrink-0">
+                      <button onclick="removeCartItem(${idx})" class="text-rose-500 text-xs hover:underline flex items-center gap-1">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                        <span>Hapus</span>
+                      </button>
+                      <span class="text-xs text-earth-700 bg-earth-100 px-3 py-1 rounded-full font-bold">Qty: ${item.quantity}</span>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+
+              <!-- Order Summary Box -->
+              <div class="bg-white rounded-3xl p-6 border border-earth-200 card-shadow h-fit space-y-6">
+                <h3 class="font-serif text-lg font-bold text-earth-900 pb-3 border-b border-earth-100">Ringkasan Belanja</h3>
+                
+                <div class="space-y-3 text-xs text-earth-600">
+                  <div class="flex justify-between">
+                    <span>Total Harga Barang:</span>
+                    <span class="font-bold text-earth-900">${formatIDR(subtotal)}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Biaya Pengiriman & Instalasi:</span>
+                    <span class="text-emerald-600 font-bold">GRATIS (Jabodetabek & Bandung)</span>
+                  </div>
+                  <div class="flex justify-between text-sm font-bold text-earth-900 pt-3 border-t border-earth-100">
+                    <span>Total Tagihan (Lunas 100%):</span>
+                    <span class="font-serif text-lg">${formatIDR(subtotal)}</span>
+                  </div>
+                </div>
+
+                <a href="#/checkout" class="w-full py-4 rounded-full bg-earth-900 hover:bg-sage-800 text-earth-50 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
+                  <span>Lanjut ke Form Checkout</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+              </div>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    function removeCartItem(idx) {
+      cart.splice(idx, 1);
+      localStorage.setItem('sherish_cart', JSON.stringify(cart));
+      updateHeaderState();
+      router();
+    }
+
+    // ================= 5. DEDICATED CHECKOUT PAGE VIEW =================
+    function renderCheckoutPage(container) {
+      if (!currentUser) {
+        openAuthModal();
+        container.innerHTML = '<div class="py-24 text-center text-xs">Harap masuk / login terlebih dahulu untuk melanjutkan checkout.</div>';
+        return;
+      }
+      if (cart.length === 0) {
+        window.location.hash = '#/cart';
+        return;
+      }
+
+      const total = cart.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
+
+      container.innerHTML = `
+        <div class="max-w-7xl mx-auto px-6 py-10">
+          <div class="text-xs text-earth-500 mb-6 flex items-center gap-1.5">
+            <a href="#/cart" class="hover:underline">Keranjang</a>
+            <span>/</span>
+            <span class="text-earth-900 font-medium">Checkout Pembayaran</span>
+          </div>
+
+          <h1 class="font-serif text-3xl font-light text-earth-900 mb-8">Informasi Pengiriman & Pembayaran</h1>
+
+          <form onsubmit="handlePlaceOrder(event)" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Form Alamat & Metode Pembayaran -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Alamat Pengiriman -->
+              <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-4">
+                <h3 class="font-serif text-lg font-bold text-earth-900 flex items-center gap-2">
+                  <i data-lucide="map-pin" class="w-5 h-5 text-sage-800"></i>
+                  <span>1. Alamat Pengiriman Furnitur</span>
+                </h3>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label class="block font-semibold text-earth-700 mb-1">Nama Penerima</label>
+                    <input type="text" id="chkName" required value="${currentUser.fullName}" class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900" />
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-earth-700 mb-1">Nomor WhatsApp / HP</label>
+                    <input type="tel" id="chkPhone" required value="${currentUser.phoneNumber || '081123123123'}" class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900" />
+                  </div>
+                </div>
+
+                <div class="text-xs">
+                  <label class="block font-semibold text-earth-700 mb-1">Alamat Lengkap</label>
+                  <textarea id="chkAddress" required rows="2" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan..." class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900">Jl. Dago Asri No. 12, Coblong</textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                  <div>
+                    <label class="block font-semibold text-earth-700 mb-1">Kota / Kabupaten</label>
+                    <input type="text" id="chkCity" required value="Bandung" class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900" />
+                  </div>
+                  <div>
+                    <label class="block font-semibold text-earth-700 mb-1">Catatan Pengiriman (Opsional)</label>
+                    <input type="text" id="chkNotes" placeholder="Titip di pos security / lantai 2" class="w-full bg-earth-50 border border-earth-300 rounded-xl px-3.5 py-2.5 text-earth-900" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pilihan Metode Pembayaran -->
+              <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-4">
+                <h3 class="font-serif text-lg font-bold text-earth-900 flex items-center gap-2">
+                  <i data-lucide="credit-card" class="w-5 h-5 text-sage-800"></i>
+                  <span>2. Pilih Metode Pembayaran (Retail Customer: Wajib Lunas)</span>
+                </h3>
+
+                <div class="space-y-2 text-xs">
+                  <label class="flex items-center justify-between p-4 rounded-2xl border border-earth-300 cursor-pointer hover:border-earth-900 has-[:checked]:border-sage-700 has-[:checked]:bg-sage-50 transition-all">
+                    <div class="flex items-center gap-3">
+                      <input type="radio" name="payMethod" value="BCA_VA" checked class="accent-earth-900" />
+                      <div>
+                        <span class="font-bold text-earth-900 block">BCA Virtual Account</span>
+                        <span class="text-[11px] text-earth-500">Konfirmasi otomatis tanpa upload bukti transfer</span>
+                      </div>
+                    </div>
+                    <span class="font-bold text-earth-700">BCA</span>
+                  </label>
+
+                  <label class="flex items-center justify-between p-4 rounded-2xl border border-earth-300 cursor-pointer hover:border-earth-900 has-[:checked]:border-sage-700 has-[:checked]:bg-sage-50 transition-all">
+                    <div class="flex items-center gap-3">
+                      <input type="radio" name="payMethod" value="MANDIRI_VA" class="accent-earth-900" />
+                      <div>
+                        <span class="font-bold text-earth-900 block">Mandiri Virtual Account</span>
+                        <span class="text-[11px] text-earth-500">Verifikasi instan 24 jam</span>
+                      </div>
+                    </div>
+                    <span class="font-bold text-earth-700">Mandiri</span>
+                  </label>
+
+                  <label class="flex items-center justify-between p-4 rounded-2xl border border-earth-300 cursor-pointer hover:border-earth-900 has-[:checked]:border-sage-700 has-[:checked]:bg-sage-50 transition-all">
+                    <div class="flex items-center gap-3">
+                      <input type="radio" name="payMethod" value="QRIS" class="accent-earth-900" />
+                      <div>
+                        <span class="font-bold text-earth-900 block">QRIS Instan</span>
+                        <span class="text-[11px] text-earth-500">Scan via Gopay, OVO, Dana, BCA Mobile, ShopeePay</span>
+                      </div>
+                    </div>
+                    <span class="font-bold text-earth-700">QRIS</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Order Review & Place Order Button -->
+            <div class="bg-white rounded-3xl p-6 border border-earth-200 card-shadow h-fit space-y-5">
+              <h3 class="font-serif text-lg font-bold text-earth-900 pb-3 border-b border-earth-100">Pesanan Anda</h3>
+
+              <div class="space-y-3 text-xs divide-y divide-earth-100">
+                ${cart.map(c => `
+                  <div class="pt-2 first:pt-0 flex justify-between gap-3">
+                    <div>
+                      <p class="font-bold text-earth-900">${c.title} (x${c.quantity})</p>
+                      <p class="text-[10px] text-earth-500">${c.material} · ${c.finishing}</p>
+                    </div>
+                    <span class="font-bold text-earth-900">${formatIDR(c.price * c.quantity)}</span>
+                  </div>
+                `).join('')}
+              </div>
+
+              <div class="pt-4 border-t border-earth-200 space-y-2 text-xs">
+                <div class="flex justify-between text-sm font-bold text-earth-900">
+                  <span>Total Tagihan:</span>
+                  <span class="font-serif text-lg">${formatIDR(total)}</span>
+                </div>
+              </div>
+
+              <button type="submit" class="w-full py-4 rounded-full bg-earth-900 hover:bg-sage-800 text-earth-50 font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
+                <i data-lucide="lock" class="w-4 h-4"></i>
+                <span>Bayar Sekarang & Buat Pesanan</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      `;
+    }
+
+    async function handlePlaceOrder(e) {
+      e.preventDefault();
+      const token = localStorage.getItem('sherish_token');
+      if (!token) {
+        openAuthModal();
+        return;
+      }
+
+      const payload = {
+        items: cart.map(c => ({
+          productId: c.productId,
+          quantity: c.quantity,
+          selectedMaterial: c.material,
+          selectedFinishing: c.finishing,
+          customDimLength: c.length,
+          customDimWidth: c.width,
+          customDimHeight: c.height
+        })),
+        shippingAddress: document.getElementById('chkAddress').value,
+        shippingCity: document.getElementById('chkCity').value,
+        recipientName: document.getElementById('chkName').value,
+        recipientPhone: document.getElementById('chkPhone').value,
+        notes: document.getElementById('chkNotes').value,
+        paymentScheme: 'FULL_PAYMENT'
+      };
+
+      try {
+        const res = await fetch(`${API_URL}/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          // Clear cart and navigate directly to Waiting for Payment page
+          cart = [];
+          localStorage.removeItem('sherish_cart');
+          updateHeaderState();
+          window.location.hash = `#/payment/${data.order.orderNumber}`;
+        } else {
+          alert(`Gagal membuat pesanan: ${data.error}`);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // ================= 6. DEDICATED WAITING FOR PAYMENT PAGE VIEW =================
+    async function renderPaymentWaitingPage(container, orderNumber) {
+      const token = localStorage.getItem('sherish_token');
+      let order = null;
+
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderNumber}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        order = data.order;
+      } catch (err) {
+        console.error(err);
+      }
+
+      if (!order) {
+        container.innerHTML = '<div class="py-24 text-center text-xs">Pesanan tidak ditemukan.</div>';
+        return;
+      }
+
+      // If already fully paid, immediately redirect to order details!
+      if (order.paymentStatus === 'FULLY_PAID' || order.paymentStatus === 'DP_PAID') {
+        window.location.hash = `#/orders/${orderNumber}`;
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="max-w-3xl mx-auto px-6 py-12">
+          <div class="bg-white rounded-3xl p-8 sm:p-10 border border-earth-200 card-shadow text-center space-y-6">
+            
+            <div class="w-16 h-16 rounded-full bg-amber-500/10 text-amber-600 flex items-center justify-center mx-auto">
+              <i data-lucide="clock" class="w-8 h-8 animate-pulse"></i>
+            </div>
+
+            <div>
+              <span class="inline-block px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 font-bold text-xs uppercase tracking-wider mb-2">
+                Menunggu Pembayaran
+              </span>
+              <h1 class="font-serif text-3xl font-medium text-earth-900">Selesaikan Pembayaran Anda</h1>
+              <p class="text-xs text-earth-600 mt-1">Nomor Pesanan: <b class="font-mono text-earth-900">${order.orderNumber}</b></p>
+            </div>
+
+            <!-- Total Amount Card -->
+            <div class="bg-earth-50 rounded-2xl p-6 border border-earth-200 max-w-md mx-auto space-y-2">
+              <span class="text-xs text-earth-500 block">Total Nominal yang Harus Ditransfer:</span>
+              <div class="font-serif text-3xl font-bold text-earth-900">${formatIDR(order.totalAmount)}</div>
+              <p class="text-[11px] text-earth-400">Harap transfer tepat sesuai nominal di atas.</p>
+            </div>
+
+            <!-- Virtual Account / Payment Box -->
+            <div class="bg-earth-100/70 rounded-2xl p-6 border border-earth-200 text-left max-w-md mx-auto space-y-3 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-earth-600">Bank Tujuan:</span>
+                <span class="font-bold text-earth-900">BCA Virtual Account</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-earth-200">
+                <span class="text-earth-600">Nomor Virtual Account:</span>
+                <span class="font-mono text-base font-bold text-sage-800">8801 0811 2312 3123</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-earth-200">
+                <span class="text-earth-600">Atas Nama:</span>
+                <span class="font-medium text-earth-900">PT Sherish Cipta Interindo</span>
+              </div>
+            </div>
+
+            <!-- Payment Simulation / Confirmation Button -->
+            <div class="pt-4 max-w-md mx-auto space-y-3">
+              <button onclick="simulatePaymentConfirm('${order.orderNumber}')" class="w-full py-4 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg transition-all">
+                <i data-lucide="check-circle" class="w-4 h-4"></i>
+                <span>Saya Sudah Bayar (Konfirmasi Otomatis)</span>
+              </button>
+              
+              <a href="#/orders/${order.orderNumber}" class="block text-xs text-earth-500 hover:underline">
+                Lihat Detail Pesanan Nanti
+              </a>
+            </div>
+
+          </div>
+        </div>
+      `;
+
+      lucide.createIcons();
+    }
+
+    async function simulatePaymentConfirm(orderNumber) {
+      const token = localStorage.getItem('sherish_token');
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderNumber}/payment`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ type: 'FULL', autoVerify: true })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          alert('✅ Pembayaran Berhasil Dikonfirmasi! Mengarahkan Anda ke rincian transaksi & status produksi...');
+          // Automatically redirect to Order Detail page!
+          window.location.hash = `#/orders/${orderNumber}`;
+        } else {
+          alert(`Gagal konfirmasi: ${data.error}`);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // ================= 7. DEDICATED ORDER DETAIL PAGE VIEW =================
+    async function renderOrderDetailPage(container, orderNumber) {
+      const token = localStorage.getItem('sherish_token');
+      let order = null;
+
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderNumber}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        order = data.order;
+      } catch (err) {
+        console.error(err);
+      }
+
+      if (!order) {
+        container.innerHTML = '<div class="py-24 text-center text-xs">Detail transaksi tidak ditemukan.</div>';
+        return;
+      }
+
+      container.innerHTML = `
+        <div class="max-w-4xl mx-auto px-6 py-10 space-y-8">
+          <!-- Breadcrumb -->
+          <div class="text-xs text-earth-500 flex items-center gap-1.5">
+            <a href="#/profile" class="hover:underline">Riwayat Transaksi</a>
+            <span>/</span>
+            <span class="text-earth-900 font-medium">${order.orderNumber}</span>
+          </div>
+
+          <!-- Header Order Status Banner -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <span class="text-[10px] text-sage-800 font-bold uppercase tracking-widest">Status Pesanan</span>
+              <h1 class="font-serif text-2xl font-bold text-earth-900 mt-0.5">${order.orderNumber}</h1>
+              <p class="text-xs text-earth-500 mt-1">Dipesan pada ${new Date(order.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
+            </div>
+            
+            <div class="text-right">
+              <span class="px-3 py-1.5 rounded-full text-xs font-bold ${order.paymentStatus==='FULLY_PAID'?'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20':'bg-amber-500/10 text-amber-700 border border-amber-500/20'}">
+                ${order.paymentStatus === 'FULLY_PAID' ? 'LUNAS (Verified)' : order.paymentStatus}
+              </span>
+            </div>
+          </div>
+
+          <!-- Interactive Production & Delivery Stepper -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-4">
+            <h3 class="font-serif text-base font-bold text-earth-900">Alur Pengerjaan & Pengiriman Pabrik Sherish</h3>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs pt-4">
+              <div class="space-y-2">
+                <div class="w-8 h-8 rounded-full stepper-done flex items-center justify-center mx-auto font-bold"><i data-lucide="check" class="w-4 h-4"></i></div>
+                <p class="font-bold text-earth-900">1. Pembayaran Lunas</p>
+                <p class="text-[10px] text-emerald-600">Terverifikasi</p>
+              </div>
+
+              <div class="space-y-2">
+                <div class="w-8 h-8 rounded-full stepper-active flex items-center justify-center mx-auto font-bold"><i data-lucide="hammer" class="w-4 h-4"></i></div>
+                <p class="font-bold text-earth-900">2. Produksi Workshop</p>
+                <p class="text-[10px] text-sage-800">Sedang Dirakit Presisi</p>
+              </div>
+
+              <div class="space-y-2">
+                <div class="w-8 h-8 rounded-full bg-earth-200 text-earth-600 flex items-center justify-center mx-auto font-bold">3</div>
+                <p class="font-medium text-earth-600">3. Quality Check</p>
+                <p class="text-[10px] text-earth-400">Inspeksi Kayu & Finishing</p>
+              </div>
+
+              <div class="space-y-2">
+                <div class="w-8 h-8 rounded-full bg-earth-200 text-earth-600 flex items-center justify-center mx-auto font-bold">4</div>
+                <p class="font-medium text-earth-600">4. Pengiriman & Rakit</p>
+                <p class="text-[10px] text-earth-400">Instalasi di Lokasi</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Order Items Breakdown -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-4">
+            <h3 class="font-serif text-base font-bold text-earth-900">Rincian Furnitur yang Dibeli</h3>
+
+            <div class="divide-y divide-earth-100 text-xs">
+              ${order.items.map(i => `
+                <div class="py-4 first:pt-0 flex gap-4 items-center">
+                  <img src="${i.product.images[0]}" class="w-20 h-20 object-cover rounded-2xl shrink-0" />
+                  <div class="flex-1">
+                    <h4 class="font-bold text-sm text-earth-900">${i.product.title}</h4>
+                    <p class="text-earth-500 text-[11px] mt-0.5">Spesifikasi: ${i.selectedMaterial || 'Jati Solid'} · Finishing ${i.selectedFinishing || 'Matte'}</p>
+                    <p class="text-earth-500 text-[11px]">Dimensi Kustom: ${i.customDimLength} x ${i.customDimWidth} x ${i.customDimHeight} cm</p>
+                    <div class="font-bold text-earth-900 mt-2">${formatIDR(i.unitPrice)} x ${i.quantity} Unit</div>
+                  </div>
+                  <div class="text-right font-serif font-bold text-sm text-earth-900">
+                    ${formatIDR(i.subtotal)}
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+
+            <div class="pt-4 border-t border-earth-200 flex justify-between items-center">
+              <span class="text-xs font-bold text-earth-700">Total Pembayaran Lunas:</span>
+              <span class="font-serif text-xl font-bold text-earth-900">${formatIDR(order.totalAmount)}</span>
+            </div>
+          </div>
+
+          <!-- Shipping Destination -->
+          <div class="bg-white rounded-3xl p-6 border border-earth-200 card-shadow space-y-2 text-xs">
+            <h3 class="font-serif text-base font-bold text-earth-900">Alamat Tujuan Pengiriman</h3>
+            <p class="font-bold text-earth-900">${order.recipientName} (${order.recipientPhone})</p>
+            <p class="text-earth-600">${order.shippingAddress}, ${order.shippingCity}</p>
+            ${order.notes ? `<p class="text-earth-500 italic mt-1">Catatan: "${order.notes}"</p>` : ''}
+          </div>
+
+          <div class="text-center pt-4">
+            <a href="#/catalog" class="px-8 py-3.5 rounded-full bg-earth-900 text-earth-50 font-bold text-xs hover:bg-sage-800 transition-all shadow">
+              Kembali Belanja Koleksi Lainnya
+            </a>
+          </div>
+        </div>
+      `;
+
+      lucide.createIcons();
+    }
+
+    // ================= 8. DEDICATED PROFILE & TRANSACTIONS PAGE VIEW =================
+    async function renderProfilePage(container) {
+      if (!currentUser) {
+        openAuthModal();
+        container.innerHTML = '<div class="py-24 text-center text-xs">Harap masuk / login terlebih dahulu untuk melihat profil & riwayat transaksi Anda.</div>';
+        return;
+      }
+
+      const token = localStorage.getItem('sherish_token');
+      let orders = [];
+      let bookings = [];
+
+      try {
+        const [resOrders, resBookings] = await Promise.all([
+          fetch(`${API_URL}/orders`, { headers: { 'Authorization': `Bearer ${token}` } }),
+          fetch(`${API_URL}/services/bookings`, { headers: { 'Authorization': `Bearer ${token}` } })
+        ]);
+        const dataOrders = await resOrders.json();
+        const dataBookings = await resBookings.json();
+        orders = dataOrders.orders || [];
+        bookings = dataBookings.bookings || [];
+      } catch (err) {
+        console.error(err);
+      }
+
+      container.innerHTML = `
+        <div class="max-w-6xl mx-auto px-6 py-10 space-y-8">
+          <!-- Profile Card -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-5">
+              <div class="w-16 h-16 rounded-full bg-earth-900 text-earth-100 flex items-center justify-center font-serif text-2xl font-bold">
+                ${currentUser.fullName.charAt(0)}
+              </div>
+              <div>
+                <h1 class="font-serif text-2xl font-bold text-earth-900">${currentUser.fullName}</h1>
+                <p class="text-xs text-earth-500 mt-0.5">${currentUser.email} · ${currentUser.phoneNumber || '081123123123'}</p>
+                <span class="inline-block px-2.5 py-0.5 rounded-full bg-sage-500/10 text-sage-800 font-bold text-[10px] uppercase mt-2">
+                  Customer Terdaftar
+                </span>
+              </div>
+            </div>
+
+            <button onclick="handleLogoutUser()" class="px-5 py-2.5 rounded-full border border-rose-300 text-rose-600 hover:bg-rose-50 text-xs font-bold transition-all">
+              Keluar (Logout)
+            </button>
+          </div>
+
+          <!-- Riwayat Transaksi -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-6">
+            <div class="flex justify-between items-center">
+              <h2 class="font-serif text-xl font-bold text-earth-900">Riwayat Pembelian Furnitur</h2>
+              <span class="text-xs text-earth-500">${orders.length} Transaksi</span>
+            </div>
+
+            ${orders.length === 0 ? `
+              <p class="text-xs text-earth-500 text-center py-10">Belum ada riwayat pesanan.</p>
+            ` : `
+              <div class="space-y-4">
+                ${orders.map(o => `
+                  <div class="p-5 rounded-2xl bg-earth-50/80 border border-earth-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="text-xs space-y-1">
+                      <div class="flex items-center gap-2">
+                        <span class="font-mono font-bold text-earth-900">${o.orderNumber}</span>
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.paymentStatus==='FULLY_PAID'?'bg-emerald-500/10 text-emerald-700':'bg-amber-500/10 text-amber-700'}">${o.paymentStatus}</span>
+                      </div>
+                      <p class="text-earth-600 font-medium">${o.items.map(i => `${i.product.title} (x${i.quantity})`).join(', ')}</p>
+                      <p class="text-[10px] text-earth-400">${new Date(o.createdAt).toLocaleDateString('id-ID')}</p>
+                    </div>
+
+                    <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                      <span class="font-serif font-bold text-base text-earth-900">${formatIDR(o.totalAmount)}</span>
+                      <a href="#/orders/${o.orderNumber}" class="px-4 py-2 rounded-full bg-earth-900 hover:bg-sage-800 text-earth-50 text-xs font-bold transition-all">
+                        Lihat Detail
+                      </a>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+
+          <!-- Riwayat Booking Survey -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-earth-200 card-shadow space-y-6">
+            <h2 class="font-serif text-xl font-bold text-earth-900">Riwayat Booking Survey & Desain</h2>
+            ${bookings.length === 0 ? `
+              <p class="text-xs text-earth-500 text-center py-6">Belum ada jadwal survey diajukan.</p>
+            ` : `
+              <div class="space-y-3 text-xs">
+                ${bookings.map(b => `
+                  <div class="p-4 rounded-xl bg-earth-50 border border-earth-200 flex justify-between items-center">
+                    <div>
+                      <span class="font-mono font-bold text-sage-800">${b.bookingNumber}</span>
+                      <p class="font-bold text-earth-900 mt-1">${b.serviceType}</p>
+                      <p class="text-[11px] text-earth-500">${b.projectAddress} · Jadwal: ${new Date(b.preferredDate).toLocaleDateString('id-ID')}</p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-indigo-500/10 text-indigo-700 border border-indigo-500/20">
+                      ${b.status}
+                    </span>
+                  </div>
+                `).join('')}
+              </div>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // ================= 9. SERVICES PAGE VIEW =================
+    function renderServicesPage(container) {
+      container.innerHTML = `
+        <div class="max-w-7xl mx-auto px-6 py-12">
+          <div class="text-center max-w-2xl mx-auto mb-16">
+            <span class="text-xs font-semibold uppercase tracking-widest text-sage-800 mb-2 block">Layanan Terpadu</span>
+            <h1 class="font-serif text-4xl font-light text-earth-900">Rancang Bangun Arsitektur & Interior</h1>
+            <p class="text-xs text-earth-600 mt-3 leading-relaxed">Solusi satu pintu mulai dari konsep 3D masterplan, perizinan, produksi custom furniture, hingga konstruksi on-site presisi sejak 2003.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="bg-white p-8 rounded-3xl border border-earth-200 card-shadow space-y-4">
+              <div class="w-12 h-12 rounded-2xl bg-earth-100 flex items-center justify-center font-serif text-xl font-bold text-earth-900">01</div>
+              <h3 class="font-serif text-xl font-medium text-earth-900">Arsitektur Rumah Sanctuary</h3>
+              <p class="text-xs text-earth-600 leading-relaxed">Perancangan fasad dan struktur rumah dengan pencahayaan sirkadian dan inner courtyard alami.</p>
+            </div>
+            <div class="bg-white p-8 rounded-3xl border border-earth-200 card-shadow space-y-4">
+              <div class="w-12 h-12 rounded-2xl bg-earth-100 flex items-center justify-center font-serif text-xl font-bold text-earth-900">02</div>
+              <h3 class="font-serif text-xl font-medium text-earth-900">Desain Interior & Custom Fit-Out</h3>
+              <p class="text-xs text-earth-600 leading-relaxed">Penataan interior bergaya Japandi & Zen dengan built-in storage rapi dari kayu jati solid.</p>
+            </div>
+            <div class="bg-white p-8 rounded-3xl border border-earth-200 card-shadow space-y-4">
+              <div class="w-12 h-12 rounded-2xl bg-earth-100 flex items-center justify-center font-serif text-xl font-bold text-earth-900">03</div>
+              <h3 class="font-serif text-xl font-medium text-earth-900">Design & Build (Turnkey)</h3>
+              <p class="text-xs text-earth-600 leading-relaxed">Eksekusi konstruksi terpadu dengan transparansi anggaran dan garansi pemeliharaan resmi.</p>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ================= AUTH MODAL HELPERS =================
+    function openAuthModal() {
+      document.getElementById('authModal').classList.remove('hidden');
+      document.getElementById('authModal').classList.add('flex');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.add('hidden');
+      document.getElementById('authModal').classList.remove('flex');
+    }
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('authNameField').classList.toggle('hidden', !isRegisterMode);
+      document.getElementById('authModalTitle').innerText = isRegisterMode ? 'Daftar Akun Baru' : 'Masuk ke Sherish';
+      document.getElementById('authSubmitBtn').innerText = isRegisterMode ? 'Daftar Sekarang' : 'Masuk Sekarang';
+      document.getElementById('authTogglePrompt').innerText = isRegisterMode ? 'Sudah punya akun?' : 'Belum punya akun?';
+      document.getElementById('authToggleBtn').innerText = isRegisterMode ? 'Masuk' : 'Daftar Akun Baru';
+    }
+
+    async function handleAuthSubmit(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+      const fullName = document.getElementById('authFullName')?.value || 'Zul Yatman';
+
+      const endpoint = isRegisterMode ? `${API_URL}/auth/register` : `${API_URL}/auth/login`;
+      const body = isRegisterMode ? { email, password, fullName, role: 'CUSTOMER' } : { email, password };
+
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          currentUser = data.user;
+          localStorage.setItem('sherish_user', JSON.stringify(data.user));
+          localStorage.setItem('sherish_token', data.token);
+          updateHeaderState();
+          closeAuthModal();
+          alert(`Selamat datang, ${data.user.fullName}!`);
+          router();
+        } else {
+          alert(`Gagal: ${data.error}`);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function handleLogoutUser() {
+      localStorage.removeItem('sherish_user');
+      localStorage.removeItem('sherish_token');
+      currentUser = null;
+      updateHeaderState();
+      window.location.hash = '#/';
+      router();
+    }
+  </script>
+</body>
+</html>

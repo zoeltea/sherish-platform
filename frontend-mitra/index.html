@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-900 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sherish B2B Partner — Portal Toko Rekanan & Sales Mitra</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              500: '#10B981',
+              600: '#059669',
+              700: '#047857',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .glass-card { background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.6); }
+    .margin-badge { background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.3) 100%); border: 1px solid rgba(16, 185, 129, 0.4); }
+  </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex">
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside id="sidebar" class="w-64 bg-slate-900/95 border-r border-slate-800 flex flex-col justify-between p-5 shrink-0">
+    <div>
+      <!-- Logo -->
+      <div class="flex items-center gap-3 mb-8 px-2">
+        <div class="w-9 h-9 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center font-bold text-lg shadow-lg shadow-emerald-500/20">
+          S
+        </div>
+        <div>
+          <h1 class="font-bold text-sm tracking-wider text-slate-100">SHERISH B2B</h1>
+          <span class="text-[10px] text-emerald-400 font-semibold">Mitra Toko & Sales Hub</span>
+        </div>
+      </div>
+
+      <!-- Partner Badge Box -->
+      <div class="mb-6 p-3 rounded-xl bg-slate-800/80 border border-slate-700/60 text-xs">
+        <span class="text-[10px] text-slate-400 block mb-0.5">Akun Toko Rekanan:</span>
+        <p class="font-bold text-slate-100 truncate" id="sideStoreName">Living Sanctuary Gallery</p>
+        <div class="flex items-center justify-between mt-2 pt-2 border-t border-slate-700/60">
+          <span class="text-[10px] text-emerald-400 font-medium">Diskon Mitra B2B</span>
+          <span class="font-bold text-emerald-400" id="sideDiscountTier">25% OFF</span>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="space-y-1.5 text-xs font-medium">
+        <button onclick="switchTab('dashboard')" class="nav-tab active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 bg-slate-800 transition-all font-bold" data-tab="dashboard">
+          <i data-lucide="layout-dashboard" class="w-4 h-4 text-emerald-400"></i>
+          <span>Dashboard Mitra</span>
+        </button>
+        <button onclick="switchTab('catalog')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="catalog">
+          <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+          <span>Katalog Kulakan B2B</span>
+        </button>
+        <button onclick="switchTab('orders')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="orders">
+          <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+          <span>Pesanan & Tracking DP</span>
+        </button>
+        <button onclick="switchTab('profile')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="profile">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>Data Toko / Sales</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- User Footer -->
+    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-8 h-8 rounded-full bg-emerald-900/60 border border-emerald-500/40 text-emerald-300 flex items-center justify-center font-bold text-xs" id="mitraAvatar">
+          TM
+        </div>
+        <div class="truncate text-xs">
+          <p class="font-medium text-slate-200 truncate" id="mitraUserName">Hendra Saputra</p>
+          <p class="text-[10px] text-emerald-400 font-semibold">Toko Rekanan Resmi</p>
+        </div>
+      </div>
+      <button onclick="handleLogout()" class="p-1.5 text-slate-400 hover:text-rose-400" title="Logout">
+        <i data-lucide="log-out" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ================= MAIN CONTENT ================= -->
+  <main class="flex-1 overflow-y-auto p-8">
+    
+    <!-- Topbar -->
+    <div class="flex items-center justify-between pb-6 mb-8 border-b border-slate-800/60">
+      <div>
+        <h2 class="text-xl font-bold text-slate-100" id="pageTitle">Dashboard Toko Mitra</h2>
+        <p class="text-xs text-slate-400" id="pageSubtitle">Kulakan furnitur pabrik Sherish dengan harga khusus & skema Down Payment (DP).</p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <button onclick="switchTab('catalog')" class="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-emerald-500/10">
+          <i data-lucide="plus-circle" class="w-4 h-4"></i>
+          <span>Buat Order Kulakan B2B</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- TAB 1: DASHBOARD -->
+    <div id="tab-dashboard" class="space-y-6">
+      <!-- Stats Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Nilai Kulakan B2B</span>
+          <p class="text-2xl font-bold text-slate-100" id="statProcurement">Rp 0</p>
+          <p class="text-[10px] text-emerald-400 mt-2 font-medium">Harga Grosir Mitra</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Pesanan Dalam Produksi</span>
+          <p class="text-2xl font-bold text-slate-100" id="statInProduction">0</p>
+          <p class="text-[10px] text-amber-400 mt-2 font-medium">DP Sudah Dikonfirmasi Pabrik</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Siap Kirim (Pelunasan)</span>
+          <p class="text-2xl font-bold text-slate-100" id="statReadyShip">0</p>
+          <p class="text-[10px] text-indigo-400 mt-2 font-medium">Perlu Pelunasan Sisa Tagihan</p>
+        </div>
+
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Potongan Harga Mitra</span>
+          <p class="text-2xl font-bold text-emerald-400" id="statDiscount">25%</p>
+          <p class="text-[10px] text-slate-400 mt-2 font-medium">Margin Keuntungan Toko Mitra</p>
+        </div>
+      </div>
+
+      <!-- Recent B2B Orders -->
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-sm text-slate-200">Riwayat Pesanan Kulakan & Status DP</h3>
+          <button onclick="switchTab('orders')" class="text-xs text-emerald-400 hover:underline">Lihat Semua Pesanan</button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">No Order</th>
+                <th class="p-3">Item Pesanan</th>
+                <th class="p-3">Skema Bayar</th>
+                <th class="p-3">Total Harga B2B</th>
+                <th class="p-3">Tagihan DP</th>
+                <th class="p-3">Sisa Pelunasan</th>
+                <th class="p-3">Status Pabrik</th>
+              </tr>
+            </thead>
+            <tbody id="recentOrdersBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: B2B CATALOG & MARGIN CALCULATOR -->
+    <div id="tab-catalog" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base text-slate-100">Katalog Kulakan B2B Pabrik Sherish</h3>
+          <p class="text-xs text-slate-400">Harga khusus mitra dengan margin keuntungan langsung untuk toko / sales Anda.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="b2bProductList">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- TAB 3: ORDERS & DP TRACKING -->
+    <div id="tab-orders" class="hidden space-y-6">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-base text-slate-100">Manajemen Pesanan Kulakan B2B & Tagihan DP</h3>
+          <p class="text-xs text-slate-400">Upload bukti transfer Down Payment (DP) atau Pelunasan sebelum pengiriman.</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">No Order</th>
+                <th class="p-3">Item & Kustomisasi</th>
+                <th class="p-3">Skema Pembayaran</th>
+                <th class="p-3">Total B2B</th>
+                <th class="p-3">Status Pembayaran</th>
+                <th class="p-3">Status Produksi Pabrik</th>
+                <th class="p-3">Aksi Pembayaran</th>
+              </tr>
+            </thead>
+            <tbody id="allOrdersBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: PROFILE -->
+    <div id="tab-profile" class="hidden space-y-6 max-w-2xl">
+      <div class="glass-card p-6 rounded-2xl">
+        <h3 class="font-bold text-sm text-slate-100 mb-4">Informasi Data Toko / Sales Mitra</h3>
+        <div class="space-y-4 text-xs">
+          <div>
+            <label class="block text-slate-400 mb-1">Nama Toko / Studio Desain</label>
+            <input type="text" id="profStoreName" disabled class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-200" />
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-slate-400 mb-1">Kota Showroom</label>
+              <input type="text" id="profStoreCity" disabled class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-200" />
+            </div>
+            <div>
+              <label class="block text-slate-400 mb-1">Kategori Kemitraan</label>
+              <input type="text" id="profPartnerType" disabled class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-200" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Alamat Showroom / Pengiriman</label>
+            <textarea id="profStoreAddress" rows="2" disabled class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-slate-200"></textarea>
+          </div>
+          <div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[11px] text-emerald-400">
+            ✅ Status Kemitraan: <b>VERIFIED PARTNER</b> (Berhak mendapatkan potongan harga 25% dan opsi Down Payment 30%/50%).
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ================= B2B ORDER MODAL (DP SELECTION) ================= -->
+  <div id="b2bOrderModal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-lg w-full p-6 sm:p-8 relative border border-slate-700 space-y-4">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-800">
+        <h3 class="font-bold text-sm text-slate-100" id="b2bModalTitle">Buat Pesanan Kulakan B2B</h3>
+        <button onclick="closeB2bModal()" class="text-slate-400 hover:text-slate-100"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <form onsubmit="submitB2bOrder(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="modalProductId" />
+        
+        <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Harga Retail Resmi (B2C):</span>
+            <span class="line-through text-slate-400" id="modalRetailPrice">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-emerald-400 font-bold">
+            <span>Harga Modal Mitra B2B:</span>
+            <span class="text-base" id="modalMitraPrice">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-slate-300 text-[11px] pt-2 border-t border-slate-800">
+            <span>Potensi Margin Keuntungan:</span>
+            <span class="font-bold text-emerald-400" id="modalProfitMargin">Rp 0 (25%)</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">Jumlah Unit (Qty)</label>
+            <input type="number" id="modalQty" min="1" value="1" onchange="recalculateModalTotal()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 text-center font-bold" />
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">Pilihan Skema Bayar</label>
+            <select id="modalPaymentScheme" onchange="recalculateModalTotal()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100 font-semibold text-emerald-400">
+              <option value="DOWN_PAYMENT_50">Down Payment (DP 50%)</option>
+              <option value="DOWN_PAYMENT_30">Down Payment (DP 30%)</option>
+              <option value="FULL_PAYMENT">Lunas 100% (Full Payment)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700 space-y-1.5 text-[11px]">
+          <div class="flex justify-between">
+            <span class="text-slate-400">Total Nilai Pesanan:</span>
+            <span class="font-bold text-slate-200" id="modalTotalAmount">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-emerald-400 font-bold">
+            <span>Wajib Bayar Sekarang (DP):</span>
+            <span id="modalDpAmount">Rp 0</span>
+          </div>
+          <div class="flex justify-between text-amber-400 font-medium">
+            <span>Sisa Pelunasan Saat Siap Kirim:</span>
+            <span id="modalRemainingAmount">Rp 0</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1">Catatan Tambahan untuk Pabrik</label>
+          <input type="text" id="modalNotes" placeholder="Contoh: Kirim ke Showroom Bandung, finishing natural doff" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-100" />
+        </div>
+
+        <button type="submit" class="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20">
+          <i data-lucide="check-circle" class="w-4 h-4"></i>
+          <span>Konfirmasi Order Kulakan B2B</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= SCRIPTS ================= -->
+  <script>
+    // Dynamic API URL Resolution
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8095/api'
+      : `http://${window.location.hostname}:8095/api`;
+    let token = localStorage.getItem('sherish_mitra_token');
+    let profile = null;
+    let b2bProducts = [];
+    let activeProduct = null;
+
+    async function init() {
+      lucide.createIcons();
+      if (!token) {
+        await autoLoginDefaultMitra();
+      } else {
+        await loadMitraData();
+      }
+    }
+
+    async function autoLoginDefaultMitra() {
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'mitra.toko@interiorhub.id', password: 'Sherish123!' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          token = data.token;
+          localStorage.setItem('sherish_mitra_token', token);
+          await loadMitraData();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadMitraData() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/profile`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          profile = data.profile;
+          renderMitraInfo(profile);
+          await loadStats();
+          await loadB2bCatalog();
+          await loadOrders();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderMitraInfo(p) {
+      document.getElementById('sideStoreName').innerText = p.storeName;
+      document.getElementById('sideDiscountTier').innerText = `${Math.round(p.discountTier * 100)}% OFF`;
+      document.getElementById('mitraUserName').innerText = p.user.fullName;
+
+      document.getElementById('profStoreName').value = p.storeName;
+      document.getElementById('profStoreCity').value = p.storeCity;
+      document.getElementById('profPartnerType').value = p.partnerType;
+      document.getElementById('profStoreAddress').value = p.storeAddress;
+    }
+
+    async function loadStats() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/stats`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+          const s = data.stats;
+          const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+          document.getElementById('statProcurement').innerText = formatIDR(s.totalProcurementValue);
+          document.getElementById('statInProduction').innerText = s.inProductionOrders;
+          document.getElementById('statReadyShip').innerText = s.readyForShipmentOrders;
+          document.getElementById('statDiscount').innerText = `${s.discountTierPercent}%`;
+
+          renderRecentOrders(data.recentOrders);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function renderRecentOrders(orders) {
+      const tbody = document.getElementById('recentOrdersBody');
+      const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada order kulakan.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-3 font-mono font-bold text-emerald-400">${o.orderNumber}</td>
+          <td class="p-3 font-medium">${o.items.map(i => `${i.product.title} (x${i.quantity})`).join(', ')}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">${o.paymentScheme.replace('DOWN_PAYMENT_', 'DP ')}</span></td>
+          <td class="p-3 font-bold text-slate-100">${formatIDR(o.totalAmount)}</td>
+          <td class="p-3 font-bold text-emerald-400">${formatIDR(o.dpAmount)}</td>
+          <td class="p-3 font-medium text-amber-400">${formatIDR(o.remainingAmount)}</td>
+          <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${o.status}</span></td>
+        </tr>
+      `).join('');
+    }
+
+    async function loadB2bCatalog() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/catalog`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        b2bProducts = data.products || [];
+        const container = document.getElementById('b2bProductList');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        if (b2bProducts.length === 0) {
+          container.innerHTML = '<p class="text-xs text-slate-500 col-span-3 text-center py-10">Katalog belum tersedia.</p>';
+          return;
+        }
+
+        container.innerHTML = b2bProducts.map(p => `
+          <div class="glass-card rounded-2xl overflow-hidden p-5 space-y-4 border border-slate-800 flex flex-col justify-between">
+            <div class="space-y-3">
+              <div class="h-44 overflow-hidden rounded-xl relative">
+                <img src="${p.images[0]}" class="w-full h-full object-cover" />
+                <div class="absolute top-3 left-3 bg-slate-950/80 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-emerald-400 font-bold border border-emerald-500/30">
+                  Margin Untung: ${formatIDR(p.potentialMargin)} (${p.marginPercent}%)
+                </div>
+              </div>
+
+              <div>
+                <span class="text-[10px] text-slate-400 uppercase font-bold">${p.categorySlug}</span>
+                <h4 class="font-bold text-slate-100 text-sm line-clamp-1">${p.title}</h4>
+                
+                <div class="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-800/80 text-xs">
+                  <div>
+                    <span class="text-[10px] text-slate-500 block">Harga Retail B2C:</span>
+                    <span class="line-through text-slate-400 font-medium">${formatIDR(p.basePrice)}</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-emerald-400 font-semibold block">Harga Modal Mitra:</span>
+                    <span class="font-bold text-emerald-400 text-sm">${formatIDR(p.mitraPrice)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button onclick="openB2bOrderModal('${p.id}')" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 transition-all">
+              <i data-lucide="shopping-bag" class="w-4 h-4"></i>
+              <span>Pesan Kulakan (Opsi DP)</span>
+            </button>
+          </div>
+        `).join('');
+        lucide.createIcons();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadOrders() {
+      try {
+        const res = await fetch(`${API_URL}/orders`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('allOrdersBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        if (!data.orders || data.orders.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada pesanan.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.orders.map(o => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-mono font-bold text-emerald-400">${o.orderNumber}</td>
+            <td class="p-3">
+              ${o.items.map(i => `<div class="font-medium">• <b>${i.product.title}</b> (x${i.quantity})</div>`).join('')}
+            </td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-300 border border-slate-700">${o.paymentScheme.replace('DOWN_PAYMENT_', 'DP ')}</span></td>
+            <td class="p-3 font-bold text-slate-100">${formatIDR(o.totalAmount)}</td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.paymentStatus==='FULLY_PAID'?'bg-emerald-500/10 text-emerald-400':o.paymentStatus==='DP_PAID'?'bg-blue-500/10 text-blue-400':'bg-amber-500/10 text-amber-400'}">${o.paymentStatus}</span>
+            </td>
+            <td class="p-3">
+              <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${o.status}</span>
+            </td>
+            <td class="p-3">
+              ${o.paymentStatus === 'UNPAID' ? `
+                <button onclick="submitPaymentProof('${o.id}', 'DP')" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-[10px]">Upload Bukti DP</button>
+              ` : o.status === 'READY_FOR_SHIPMENT' && o.paymentStatus !== 'FULLY_PAID' ? `
+                <button onclick="submitPaymentProof('${o.id}', 'FINAL')" class="px-2.5 py-1 rounded bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-[10px]">Pelunasan Akhir</button>
+              ` : `<span class="text-slate-500 text-[10px]">Terkonfirmasi</span>`}
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function openB2bOrderModal(productId) {
+      activeProduct = b2bProducts.find(p => p.id === productId);
+      if (!activeProduct) return;
+
+      const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+      document.getElementById('modalProductId').value = activeProduct.id;
+      document.getElementById('b2bModalTitle').innerText = `Kulakan: ${activeProduct.title}`;
+      document.getElementById('modalRetailPrice').innerText = formatIDR(activeProduct.basePrice);
+      document.getElementById('modalMitraPrice').innerText = formatIDR(activeProduct.mitraPrice);
+      document.getElementById('modalProfitMargin').innerText = `${formatIDR(activeProduct.potentialMargin)} per unit (${activeProduct.marginPercent}%)`;
+      document.getElementById('modalQty').value = 1;
+
+      recalculateModalTotal();
+
+      document.getElementById('b2bOrderModal').classList.remove('hidden');
+      document.getElementById('b2bOrderModal').classList.add('flex');
+    }
+
+    function closeB2bModal() {
+      document.getElementById('b2bOrderModal').classList.add('hidden');
+      document.getElementById('b2bOrderModal').classList.remove('flex');
+    }
+
+    function recalculateModalTotal() {
+      if (!activeProduct) return;
+      const qty = parseInt(document.getElementById('modalQty').value) || 1;
+      const scheme = document.getElementById('modalPaymentScheme').value;
+      const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+      const total = activeProduct.mitraPrice * qty;
+      let dp = total;
+      let remaining = 0;
+
+      if (scheme === 'DOWN_PAYMENT_30') {
+        dp = Math.round(total * 0.3);
+        remaining = total - dp;
+      } else if (scheme === 'DOWN_PAYMENT_50') {
+        dp = Math.round(total * 0.5);
+        remaining = total - dp;
+      }
+
+      document.getElementById('modalTotalAmount').innerText = formatIDR(total);
+      document.getElementById('modalDpAmount').innerText = formatIDR(dp);
+      document.getElementById('modalRemainingAmount').innerText = formatIDR(remaining);
+    }
+
+    async function submitB2bOrder(e) {
+      e.preventDefault();
+      const qty = parseInt(document.getElementById('modalQty').value) || 1;
+      const paymentScheme = document.getElementById('modalPaymentScheme').value;
+      const notes = document.getElementById('modalNotes').value;
+
+      try {
+        const payload = {
+          items: [
+            {
+              productId: activeProduct.id,
+              quantity: qty
+            }
+          ],
+          paymentScheme,
+          shippingAddress: profile.storeAddress,
+          shippingCity: profile.storeCity,
+          recipientName: profile.storeName,
+          recipientPhone: profile.user.phoneNumber || '081298765432',
+          notes
+        };
+
+        const res = await fetch(`${API_URL}/orders`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+          alert(`✅ ${data.message}`);
+          closeB2bModal();
+          await loadStats();
+          await loadOrders();
+          switchTab('orders');
+        } else {
+          alert(`Gagal: ${data.error}`);
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function submitPaymentProof(orderId, type) {
+      const proof = prompt(`Masukkan nomor referensi transfer bank / link bukti ${type}:`, `TRF-${type}-BCA-${Date.now().toString().slice(-6)}`);
+      if (!proof) return;
+
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderId}/payment`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ type, proofUrl: proof })
+        });
+        if (res.ok) {
+          alert(`Bukti ${type} berhasil diupload. Tim finance Sherish akan memverifikasi pesanan Anda.`);
+          await loadOrders();
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.nav-tab').forEach(b => {
+        if (b.getAttribute('data-tab') === tab) {
+          b.className = 'nav-tab active w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-200 bg-slate-800 transition-all font-bold';
+        } else {
+          b.className = 'nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all font-medium';
+        }
+      });
+
+      ['dashboard', 'catalog', 'orders', 'profile'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+      });
+      document.getElementById(`tab-${tab}`).classList.remove('hidden');
+
+      const titles = {
+        dashboard: ['Dashboard Toko Mitra', 'Kulakan furnitur pabrik Sherish dengan harga khusus & skema Down Payment (DP).'],
+        catalog: ['Katalog Kulakan B2B Pabrik Sherish', 'Pilih produk berkualitas pabrik Sherish dengan margin keuntungan toko.'],
+        orders: ['Manajemen Pesanan & Status DP', 'Pantau proses antrean produksi di pabrik dan jadwal pelunasan.'],
+        profile: ['Data Toko / Sales Partner', 'Informasi showroom mitra terdaftar dan benefit tier diskon.']
+      };
+
+      document.getElementById('pageTitle').innerText = titles[tab][0];
+      document.getElementById('pageSubtitle').innerText = titles[tab][1];
+      lucide.createIcons();
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('sherish_mitra_token');
+      location.reload();
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
