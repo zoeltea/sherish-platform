@@ -420,10 +420,29 @@
           await loadB2bCatalog();
           await loadOrders();
           await loadSalesCommissions();
+          startMitraOrdersPolling(5);
         }
       } catch (err) {
         console.error(err);
       }
+    }
+
+    function startMitraOrdersPolling(intervalSeconds = 5) {
+      if (window.mitraOrdersPollingInterval) {
+        clearInterval(window.mitraOrdersPollingInterval);
+        window.mitraOrdersPollingInterval = null;
+      }
+
+      window.mitraOrdersPollingInterval = setInterval(async () => {
+        try {
+          if (!token) return;
+          // Refresh orders and stats in background
+          await loadOrders();
+          await loadStats();
+        } catch (err) {
+          console.error('Mitra orders polling error:', err);
+        }
+      }, intervalSeconds * 1000);
     }
 
     async function loadSalesCommissions() {
@@ -783,6 +802,10 @@
       localStorage.removeItem('sherish_mitra_token');
       location.reload();
     }
+
+    window.addEventListener('beforeunload', () => {
+      if (window.mitraOrdersPollingInterval) clearInterval(window.mitraOrdersPollingInterval);
+    });
 
     window.onload = init;
   </script>

@@ -487,6 +487,25 @@
       await loadOrders();
       await loadBookings();
       await loadUsers();
+      startAdminOrdersPolling(5);
+    }
+
+    function startAdminOrdersPolling(intervalSeconds = 5) {
+      if (window.adminOrdersPollingInterval) {
+        clearInterval(window.adminOrdersPollingInterval);
+        window.adminOrdersPollingInterval = null;
+      }
+
+      window.adminOrdersPollingInterval = setInterval(async () => {
+        try {
+          if (!token) return;
+          // Refresh orders and overview stats in background
+          await loadOrders();
+          await loadStats();
+        } catch (err) {
+          console.error('Admin orders polling error:', err);
+        }
+      }, intervalSeconds * 1000);
     }
 
     async function loadStats() {
@@ -863,11 +882,15 @@
             <td class="p-3">
               <select onchange="updateAdminOrderStatus('${o.id}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200">
                 <option value="PENDING_PAYMENT" ${o.status==='PENDING_PAYMENT'?'selected':''}>Pending Payment</option>
-                <option value="PAYMENT_VERIFIED" ${o.status==='PAYMENT_VERIFIED'?'selected':''}>Payment Verified</option>
+                <option value="DP_CONFIRMED" ${o.status==='DP_CONFIRMED'?'selected':''}>DP Confirmed</option>
+                <option value="MATERIALS_PREPARATION" ${o.status==='MATERIALS_PREPARATION'?'selected':''}>Materials Preparation</option>
                 <option value="IN_PRODUCTION" ${o.status==='IN_PRODUCTION'?'selected':''}>In Production</option>
                 <option value="QUALITY_CHECK" ${o.status==='QUALITY_CHECK'?'selected':''}>Quality Check</option>
+                <option value="READY_FOR_SHIPMENT" ${o.status==='READY_FOR_SHIPMENT'?'selected':''}>Ready For Shipment</option>
+                <option value="FINAL_PAYMENT_CONFIRMED" ${o.status==='FINAL_PAYMENT_CONFIRMED'?'selected':''}>Final Payment Confirmed</option>
                 <option value="SHIPPED" ${o.status==='SHIPPED'?'selected':''}>Shipped</option>
                 <option value="COMPLETED" ${o.status==='COMPLETED'?'selected':''}>Completed</option>
+                <option value="CANCELLED" ${o.status==='CANCELLED'?'selected':''}>Cancelled</option>
               </select>
             </td>
           </tr>
@@ -1059,6 +1082,10 @@
       localStorage.removeItem('sherish_admin_token');
       location.reload();
     }
+
+    window.addEventListener('beforeunload', () => {
+      if (window.adminOrdersPollingInterval) clearInterval(window.adminOrdersPollingInterval);
+    });
 
     window.onload = init;
   </script>
