@@ -10,6 +10,7 @@ const serviceRoutes = require('./routes/services');
 const mitraRoutes = require('./routes/mitra');
 const adminRoutes = require('./routes/admin');
 const { PrismaClient } = require('@prisma/client');
+const invoiceService = require('./services/invoiceService');
 const prisma = new PrismaClient();
 
 const app = express();
@@ -82,6 +83,41 @@ app.get('/api/users/sales', async (req, res) => {
     });
 
     res.json({ count: salesList.length, sales: salesList });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/invoices/:invoiceId/pdf (Download Invoice as PDF)
+app.get('/api/invoices/:invoiceId/pdf', async (req, res) => {
+  try {
+    const { invoiceId } = req.params;
+    const invoice = await prisma.invoice.findFirst({
+      where: {
+        OR: [
+          { id: invoiceId },
+          { invoiceNumber: invoiceId }
+        ]
+      },
+      include: {
+        order: {
+          include: {
+            user: true,
+            mitra: true,
+            items: { include: { product: true } }
+          }
+        }
+      }
+    });
+
+    if (!invoice) {
+      return res.status(404).json({ error: 'Invoice tidak ditemukan' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `inline; filename="Invoice-${invoice.invoiceNumber}.pdf"`);
+
+    invoiceService.createInvoicePDF(invoice, invoice.order, res);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

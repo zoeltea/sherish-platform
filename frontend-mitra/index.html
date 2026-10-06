@@ -214,6 +214,7 @@
                 <th class="p-3">Total B2B</th>
                 <th class="p-3">Status Pembayaran</th>
                 <th class="p-3">Status Produksi Pabrik</th>
+                <th class="p-3">Dokumen Invoice</th>
                 <th class="p-3">Aksi Pembayaran</th>
               </tr>
             </thead>
@@ -600,6 +601,12 @@
               <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">${o.status}</span>
             </td>
             <td class="p-3">
+              <button onclick="downloadOrderInvoice('${o.id}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-[10px] font-semibold flex items-center gap-1">
+                <i data-lucide="file-text" class="w-3 h-3 text-emerald-400"></i>
+                <span>PDF Faktur</span>
+              </button>
+            </td>
+            <td class="p-3">
               ${o.paymentStatus === 'UNPAID' ? `
                 <button onclick="submitPaymentProof('${o.id}', 'DP')" class="px-2.5 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-[10px]">Upload Bukti DP</button>
               ` : o.status === 'READY_FOR_SHIPMENT' && o.paymentStatus !== 'FULLY_PAID' ? `
@@ -724,6 +731,23 @@
         }
       } catch (err) {
         alert(err.message);
+      }
+    }
+
+    async function downloadOrderInvoice(orderId) {
+      try {
+        const res = await fetch(`${API_URL}/orders/${orderId}/invoices`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.invoices && data.invoices.length > 0) {
+          const inv = data.invoices[data.invoices.length - 1]; // latest invoice
+          window.open(`${API_URL}/invoices/${inv.id}/pdf`, '_blank');
+        } else {
+          alert('Faktur belum diterbitkan untuk pesanan ini.');
+        }
+      } catch (err) {
+        alert('Gagal mengunduh invoice: ' + err.message);
       }
     }
 

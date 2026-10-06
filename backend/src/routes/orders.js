@@ -2,6 +2,7 @@ const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 const emailService = require('../services/emailService');
+const invoiceService = require('../services/invoiceService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -101,6 +102,29 @@ router.post('/', authenticateToken, async (req, res) => {
       }
     });
 
+    // Automatically generate initial invoice (DP or Full Payment)
+    try {
+      const invType = selectedScheme === 'FULL_PAYMENT' ? 'FULL_PAYMENT' : 'DP_PAYMENT';
+      const invAmount = selectedScheme === 'FULL_PAYMENT' ? totalAmount : dpAmount;
+      const dueDate = new Date();
+      dueDate.setDate(dueDate.getDate() + 3); // 3 days due date
+
+      const invoiceNumber = `INV-${invType === 'DP_PAYMENT' ? 'DP' : 'FULL'}-${orderNumber.slice(-6)}`;
+      await prisma.invoice.create({
+        data: {
+          orderId: order.id,
+          invoiceNumber,
+          type: invType,
+          amount: invAmount,
+          dueDate,
+          status: 'PENDING',
+          notes: `Tagihan ${invType.replace('_', ' ')} untuk pesanan ${orderNumber}`
+        }
+      });
+    } catch (e) {
+      console.error('Initial invoice generation error:', e.message);
+    }
+
     // Trigger Email Notification: Order Confirmation & DP Instructions
     try {
       await emailService.sendOrderConfirmedEmail(order, order.user || req.user);
@@ -142,6 +166,75 @@ router.get('/', authenticateToken, async (req, res) => {
     });
 
     res.json({ count: orders.length, orders });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/orders/:identifier/invoices (List all invoices for an order)
+router.get('/:identifier/invoices', authenticateToken, async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { orderNumber: identifier }
+        ]
+      },
+      include: {
+        invoices: { orderBy: { createdAt: 'asc' } }
+      }
+    });
+
+    if (!order) return res.status(404).json({ error: 'Order tidak ditemukan' });
+    res.json({ count: order.invoices.length, invoices: order.invoices });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/orders/:identifier/generate-invoice (Generate DP, FINAL, or FULL invoice)
+router.post('/:identifier/generate-invoice', authenticateToken, authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN', 'MITRA'), async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const { type = 'FINAL_PAYMENT', amount, dueDate } = req.body;
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { orderNumber: identifier }
+        ]
+      }
+    });
+
+    if (!order) return res.status(404).json({ error: 'Order tidak ditemukan' });
+
+    let invoiceAmount = amount;
+    if (!invoiceAmount) {
+      if (type === 'DP_PAYMENT') invoiceAmount = order.dpAmount;
+      else if (type === 'FINAL_PAYMENT') invoiceAmount = order.remainingAmount;
+      else invoiceAmount = order.totalAmount;
+    }
+
+    const due = dueDate ? new Date(dueDate) : new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    const typeCode = type === 'DP_PAYMENT' ? 'DP' : type === 'FINAL_PAYMENT' ? 'FINAL' : 'FULL';
+    const invoiceNumber = `INV-${typeCode}-${order.orderNumber.slice(-6)}-${Date.now().toString().slice(-4)}`;
+
+    const invoice = await prisma.invoice.create({
+      data: {
+        orderId: order.id,
+        invoiceNumber,
+        type,
+        amount: invoiceAmount,
+        dueDate: due,
+        status: 'PENDING',
+        notes: `Official ${type.replace('_', ' ')} Invoice for Order #${order.orderNumber}`
+      }
+    });
+
+    res.status(201).json({ message: 'Invoice berhasil diterbitkan', invoice });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

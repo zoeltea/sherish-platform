@@ -294,7 +294,7 @@ async function main() {
   // 5. Create Sample Mitra B2B Order with Down Payment (DP 50%)
   const firstProd = await prisma.product.findFirst({ where: { slug: 'komorebi-solid-dining-table' } });
 
-  await prisma.order.upsert({
+  const b2bOrder = await prisma.order.upsert({
     where: { orderNumber: 'SHR-B2B-20261001' },
     update: {},
     create: {
@@ -329,10 +329,27 @@ async function main() {
     }
   });
 
+  // Sample DP Invoice for B2B Order
+  await prisma.invoice.upsert({
+    where: { invoiceNumber: 'INV-DP-B2B-1001' },
+    update: {},
+    create: {
+      orderId: b2bOrder.id,
+      invoiceNumber: 'INV-DP-B2B-1001',
+      type: 'DP_PAYMENT',
+      amount: 6675000,
+      dueDate: new Date('2026-10-07T00:00:00Z'),
+      status: 'PAID',
+      paidDate: new Date('2026-10-04T08:00:00Z'),
+      paymentMethod: 'Bank Transfer BCA',
+      notes: 'Faktur Uang Muka DP 50% Produksi Meja Komorebi'
+    }
+  });
+
   // 6. Create Sample Retail Customer Order (Full Payment 100%)
   const loungeProd = await prisma.product.findFirst({ where: { slug: 'sanctuary-teak-lounge-chair' } });
 
-  await prisma.order.upsert({
+  const retOrder = await prisma.order.upsert({
     where: { orderNumber: 'SHR-RET-20261002' },
     update: {},
     create: {
@@ -364,6 +381,22 @@ async function main() {
           }
         ]
       }
+    }
+  });
+
+  await prisma.invoice.upsert({
+    where: { invoiceNumber: 'INV-FULL-RET-1002' },
+    update: {},
+    create: {
+      orderId: retOrder.id,
+      invoiceNumber: 'INV-FULL-RET-1002',
+      type: 'FULL_PAYMENT',
+      amount: 4250000,
+      dueDate: new Date('2026-10-05T00:00:00Z'),
+      status: 'PAID',
+      paidDate: new Date('2026-10-03T11:00:00Z'),
+      paymentMethod: 'BCA Virtual Account',
+      notes: 'Lunas 100% Pesanan Retail Sanctuary Teak Lounge Chair'
     }
   });
 

@@ -179,6 +179,19 @@ model Product {
   reviews        Review[]
 }
 
+enum InvoiceType {
+  DP_PAYMENT
+  FINAL_PAYMENT
+  FULL_PAYMENT
+}
+
+enum InvoiceStatus {
+  PENDING
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
 model Order {
   id              String        @id @default(uuid())
   orderNumber     String        @unique
@@ -211,6 +224,24 @@ model Order {
   updatedAt       DateTime      @updatedAt
 
   items           OrderItem[]
+  invoices        Invoice[]
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  orderId       String
+  order         Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  invoiceNumber String        @unique
+  type          InvoiceType   @default(DP_PAYMENT)
+  amount        Float
+  dueDate       DateTime
+  status        InvoiceStatus @default(PENDING)
+  paidDate      DateTime?
+  paymentMethod String?
+  notes         String?
+  pdfUrl        String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 }
 
 model OrderItem {
