@@ -16,7 +16,8 @@ const invoiceService = require('./services/invoiceService');
 const TelegramService = require('./services/telegramService');
 const prisma = new PrismaClient();
 
-// Load environment variables from .env.telegram if exists
+// Load environment variables (.env in backend or root, and .env.telegram if exists)
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
 require('dotenv').config({ path: path.join(__dirname, '../../.env.telegram') });
 
 const app = express();
