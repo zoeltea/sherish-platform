@@ -6,6 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const TelegramService = require('../services/telegramService');
+const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
 
 /**
  * POST /api/telegram/webhook
@@ -60,7 +61,7 @@ router.get('/status', async (req, res) => {
  * Send message to user via Telegram bot
  * Admin/backend use only
  */
-router.post('/send-message', async (req, res) => {
+router.post('/send-message', authenticateToken, authorizeRoles('ADMIN_CS', 'ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
   try {
     const { chatId, message } = req.body;
 
@@ -79,7 +80,7 @@ router.post('/send-message', async (req, res) => {
  * POST /api/telegram/notify-order-status
  * Send order status notification to user
  */
-router.post('/notify-order-status', async (req, res) => {
+router.post('/notify-order-status', authenticateToken, authorizeRoles('ADMIN_CS', 'ADMIN_CATALOG', 'ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
   try {
     const { chatId, order } = req.body;
 
@@ -98,7 +99,7 @@ router.post('/notify-order-status', async (req, res) => {
  * POST /api/telegram/notify-payment-reminder
  * Send payment reminder to user
  */
-router.post('/notify-payment-reminder', async (req, res) => {
+router.post('/notify-payment-reminder', authenticateToken, authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
   try {
     const { chatId, order } = req.body;
 

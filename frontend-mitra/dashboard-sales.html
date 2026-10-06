@@ -186,7 +186,20 @@
         const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
         if (!data.referrals || data.referrals.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada mitra binaan.</td></tr>';
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="6" class="text-center py-12 text-slate-400">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                    <i data-lucide="store" class="w-5 h-5 text-amber-400"></i>
+                  </div>
+                  <p class="font-medium text-slate-300">Belum ada mitra binaan atau showroom yang terdaftar.</p>
+                  <p class="text-[11px] text-slate-500">Gunakan tautan referral Anda untuk merekrut toko mitra furnitur baru.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          lucide.createIcons();
           return;
         }
 

@@ -30,14 +30,32 @@
     }
   </script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Reusable Order Timeline Component -->
+  <script src="components/order-timeline.js"></script>
   <style>
     .glass-card { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.7); }
   </style>
 </head>
-<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex">
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col md:flex-row">
+
+  <!-- Mobile Topbar Header -->
+  <header class="md:hidden bg-slate-900 border-b border-slate-800 p-4 flex items-center justify-between sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-md">
+        S
+      </div>
+      <div>
+        <h1 class="font-bold text-xs tracking-wider text-slate-100">SHERISH ADMIN</h1>
+        <span class="text-[9px] text-indigo-400 font-semibold uppercase" id="mobileRoleBadge">Super Admin</span>
+      </div>
+    </div>
+    <button onclick="toggleMobileAdminMenu()" class="p-2 rounded-lg bg-slate-800 text-slate-200">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+  </header>
 
   <!-- ================= SIDEBAR ================= -->
-  <aside id="sidebar" class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between p-5 shrink-0">
+  <aside id="sidebar" class="w-full md:w-64 bg-slate-900 border-r border-slate-800 hidden md:flex flex-col justify-between p-5 shrink-0">
     <div>
       <!-- Logo & Admin Role Switcher Header -->
       <div class="flex items-center gap-3 mb-6 px-2">
@@ -118,10 +136,10 @@
   </aside>
 
   <!-- ================= MAIN CONTENT ================= -->
-  <main class="flex-1 overflow-y-auto p-8">
+  <main class="flex-1 overflow-y-auto p-4 sm:p-8">
     
     <!-- Topbar -->
-    <div class="flex items-center justify-between pb-6 mb-8 border-b border-slate-800">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-6 mb-8 border-b border-slate-800 gap-4">
       <div>
         <h2 class="text-xl font-bold text-slate-100" id="pageTitle">Global Enterprise Overview</h2>
         <p class="text-xs text-slate-400" id="pageSubtitle">Monitoring performa e-commerce, ekosistem mitra, dan proyek arsitektur.</p>
@@ -280,6 +298,7 @@
                 <th class="p-3">Total Nilai</th>
                 <th class="p-3">Status Saat Ini</th>
                 <th class="p-3">Update Status</th>
+                <th class="p-3 text-center">Tracking & Timeline</th>
               </tr>
             </thead>
             <tbody id="ordersTableBody" class="divide-y divide-slate-800"></tbody>
@@ -434,6 +453,49 @@
 
   </main>
 
+  <!-- ================= ADMIN ORDER TIMELINE DETAIL MODAL ================= -->
+  <div id="adminTimelineModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="glass-card rounded-3xl max-w-3xl w-full p-6 sm:p-8 relative border border-slate-700 space-y-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-start pb-4 border-b border-slate-800">
+        <div>
+          <span class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">Master Order Tracking & Timeline</span>
+          <h3 class="font-bold text-lg text-slate-100 mt-0.5" id="adminTimelineOrderNumber">Pesanan #</h3>
+          <p class="text-xs text-slate-400 mt-0.5" id="adminTimelineCustomer">Pelanggan: -</p>
+        </div>
+        <button onclick="closeAdminTimelineModal()" class="text-slate-400 hover:text-slate-100 p-1.5 rounded-lg bg-slate-800"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+
+      <!-- Timeline Stepper Container -->
+      <div class="p-5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-3">
+        <h4 class="text-xs font-bold text-slate-200">Progress Pengerjaan Workshop (Tri-Portal Sync)</h4>
+        <div id="adminTimelineStepper"></div>
+      </div>
+
+      <!-- Quick Status Changer in Modal -->
+      <div class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div>
+          <span class="text-slate-400 font-medium">Ubah Status Produksi Langsung:</span>
+          <p class="text-[10px] text-slate-500">Perubahan akan otomatis terupdate di portal User dan Mitra.</p>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <select id="adminModalStatusSelect" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-medium">
+            <option value="PENDING_PAYMENT">Pending Payment</option>
+            <option value="DP_CONFIRMED">DP Confirmed</option>
+            <option value="MATERIALS_PREPARATION">Materials Preparation</option>
+            <option value="IN_PRODUCTION">In Production</option>
+            <option value="QUALITY_CHECK">Quality Check</option>
+            <option value="READY_FOR_SHIPMENT">Ready For Shipment</option>
+            <option value="FINAL_PAYMENT_CONFIRMED">Final Payment Confirmed</option>
+            <option value="SHIPPED">Shipped</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+          <button onclick="saveModalOrderStatus()" class="px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs">Simpan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= SCRIPTS ================= -->
   <script>
     // Dynamic API URL Resolution
@@ -442,6 +504,11 @@
       : `http://${window.location.hostname}:8095/api`;
     let token = localStorage.getItem('sherish_admin_token');
     let currentAdminEmail = 'superadmin@sherish.co.id';
+
+    function toggleMobileAdminMenu() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('hidden');
+    }
 
     async function init() {
       lucide.createIcons();
@@ -472,7 +539,10 @@
     function renderAdminProfile(user) {
       document.getElementById('adminName').innerText = user.fullName;
       document.getElementById('adminEmail').innerText = user.email;
-      document.getElementById('currentRoleBadge').innerText = user.role.replace('ADMIN_', '') + ' Access';
+      const roleText = user.role.replace('ADMIN_', '') + ' Access';
+      document.getElementById('currentRoleBadge').innerText = roleText;
+      const mobBadge = document.getElementById('mobileRoleBadge');
+      if (mobBadge) mobBadge.innerText = roleText;
     }
 
     async function changeAdminRole(email) {
@@ -539,7 +609,9 @@
           <td class="p-2.5 font-mono text-indigo-300 font-bold">${o.orderNumber}</td>
           <td class="p-2.5">${o.user?.fullName || '-'}</td>
           <td class="p-2.5 font-bold text-slate-200">${formatIDR(o.totalAmount)}</td>
-          <td class="p-2.5"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-semibold">${o.status}</span></td>
+          <td class="p-2.5">
+            ${window.SherishTimeline ? window.SherishTimeline.renderBadge(o.status) : `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-semibold">${o.status}</span>`}
+          </td>
         </tr>
       `).join('') || '<tr><td colspan="4" class="text-center py-4 text-slate-500">Tidak ada data.</td></tr>';
 
@@ -721,7 +793,20 @@
         const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
         if (!data.invoices || data.invoices.length === 0) {
-          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada data invoice.</td></tr>';
+          tbody.innerHTML = `
+            <tr>
+              <td colspan="7" class="text-center py-12 text-slate-400">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500">
+                    <i data-lucide="receipt" class="w-5 h-5"></i>
+                  </div>
+                  <p class="font-medium text-slate-300">Belum ada faktur piutang atau tagihan.</p>
+                  <p class="text-[11px] text-slate-500">Tagihan DP atau Pelunasan akan muncul otomatis ketika order masuk.</p>
+                </div>
+              </td>
+            </tr>
+          `;
+          lucide.createIcons();
           return;
         }
 
@@ -860,6 +945,9 @@
       }
     }
 
+    let adminOrdersList = [];
+    let selectedAdminOrderId = null;
+
     async function loadOrders() {
       try {
         const res = await fetch(`${API_URL}/orders`, {
@@ -869,7 +957,14 @@
         const tbody = document.getElementById('ordersTableBody');
         const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
 
-        tbody.innerHTML = (data.orders || []).map(o => `
+        adminOrdersList = data.orders || [];
+
+        if (!adminOrdersList || adminOrdersList.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada data pesanan.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = adminOrdersList.map(o => `
           <tr class="hover:bg-slate-800/40">
             <td class="p-3 font-mono font-bold text-indigo-300">${o.orderNumber}</td>
             <td class="p-3">
@@ -878,7 +973,9 @@
             </td>
             <td class="p-3">${o.mitra?.storeName || 'Retail Direct'}</td>
             <td class="p-3 font-bold text-slate-100">${formatIDR(o.totalAmount)}</td>
-            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-bold">${o.status}</span></td>
+            <td class="p-3">
+              ${window.SherishTimeline ? window.SherishTimeline.renderBadge(o.status) : `<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/10 text-emerald-400 font-bold">${o.status}</span>`}
+            </td>
             <td class="p-3">
               <select onchange="updateAdminOrderStatus('${o.id}', this.value)" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-[11px] text-slate-200">
                 <option value="PENDING_PAYMENT" ${o.status==='PENDING_PAYMENT'?'selected':''}>Pending Payment</option>
@@ -893,10 +990,51 @@
                 <option value="CANCELLED" ${o.status==='CANCELLED'?'selected':''}>Cancelled</option>
               </select>
             </td>
+            <td class="p-3 text-center">
+              <button onclick="viewAdminOrderTimeline('${o.id}')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-indigo-400 border border-slate-700 text-[10px] font-semibold flex items-center justify-center gap-1 mx-auto">
+                <i data-lucide="git-commit" class="w-3 h-3"></i>
+                <span>Timeline</span>
+              </button>
+            </td>
           </tr>
         `).join('');
       } catch (err) {
         console.error(err);
+      }
+    }
+
+    function viewAdminOrderTimeline(orderId) {
+      const order = adminOrdersList.find(o => o.id === orderId);
+      if (!order) return;
+
+      selectedAdminOrderId = orderId;
+      document.getElementById('adminTimelineOrderNumber').innerText = `Pesanan #${order.orderNumber}`;
+      document.getElementById('adminTimelineCustomer').innerText = `Pelanggan: ${order.recipientName} (${order.recipientPhone}) · Tujuan: ${order.shippingCity}`;
+      document.getElementById('adminModalStatusSelect').value = order.status;
+
+      if (window.SherishTimeline && typeof window.SherishTimeline.render === 'function') {
+        document.getElementById('adminTimelineStepper').innerHTML = window.SherishTimeline.render(order.status, { theme: 'dark' });
+      }
+
+      document.getElementById('adminTimelineModal').classList.remove('hidden');
+      document.getElementById('adminTimelineModal').classList.add('flex');
+      lucide.createIcons();
+    }
+
+    function closeAdminTimelineModal() {
+      document.getElementById('adminTimelineModal').classList.add('hidden');
+      document.getElementById('adminTimelineModal').classList.remove('flex');
+    }
+
+    async function saveModalOrderStatus() {
+      if (!selectedAdminOrderId) return;
+      const newStatus = document.getElementById('adminModalStatusSelect').value;
+      await updateAdminOrderStatus(selectedAdminOrderId, newStatus);
+      
+      const updatedOrder = adminOrdersList.find(o => o.id === selectedAdminOrderId);
+      if (updatedOrder && window.SherishTimeline) {
+        document.getElementById('adminTimelineStepper').innerHTML = window.SherishTimeline.render(newStatus, { theme: 'dark' });
+        lucide.createIcons();
       }
     }
 
