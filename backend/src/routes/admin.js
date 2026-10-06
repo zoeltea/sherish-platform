@@ -10,6 +10,153 @@ const prisma = new PrismaClient();
 router.use(authenticateToken);
 router.use(authorizeRoles('ADMIN_CATALOG', 'ADMIN_FINANCE', 'ADMIN_QUALITY', 'ADMIN_CS', 'SUPER_ADMIN'));
 
+// GET /api/admin/finance/dashboard (Finance overview metrics)
+router.get('/finance/dashboard', authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const invoices = await prisma.invoice.findMany({
+      include: { order: { include: { user: true, mitra: true } } }
+    });
+
+    const totalPending = invoices.filter(i => i.status === 'PENDING').reduce((sum, i) => sum + i.amount, 0);
+    const totalPaid = invoices.filter(i => i.status === 'PAID').reduce((sum, i) => sum + i.amount, 0);
+    const totalOverdue = invoices.filter(i => i.status === 'OVERDUE' || (i.status === 'PENDING' && new Date(i.dueDate) < new Date())).reduce((sum, i) => sum + i.amount, 0);
+
+    const pendingCount = invoices.filter(i => i.status === 'PENDING').length;
+    const paidCount = invoices.filter(i => i.status === 'PAID').length;
+    const overdueCount = invoices.filter(i => i.status === 'OVERDUE' || (i.status === 'PENDING' && new Date(i.dueDate) < new Date())).length;
+
+    res.json({
+      totalPending,
+      totalPaid,
+      totalOverdue,
+      pendingCount,
+      paidCount,
+      overdueCount,
+      totalInvoices: invoices.length
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/finance/invoices (Paginated / Filterable invoice list for finance)
+router.get('/finance/invoices', authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const { status, type } = req.query;
+    const where = {};
+    if (status) where.status = status;
+    if (type) where.type = type;
+
+    const invoices = await prisma.invoice.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        order: {
+          include: {
+            user: { select: { fullName: true, email: true, phoneNumber: true } },
+            mitra: { select: { storeName: true, workArea: true, storeCity: true } }
+          }
+        }
+      }
+    });
+
+    res.json({ count: invoices.length, invoices });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// PATCH /api/admin/finance/invoices/:id/mark-paid (Reconciliation mark paid)
+router.patch('/finance/invoices/:id/mark-paid', authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const { paidDate, paymentMethod = 'Bank Transfer BCA', notes } = req.body;
+
+    const updated = await prisma.invoice.update({
+      where: { id: req.params.id },
+      data: {
+        status: 'PAID',
+        paidDate: paidDate ? new Date(paidDate) : new Date(),
+        paymentMethod,
+        notes: notes || 'Rekonsiliasi pembayaran diverifikasi oleh Admin Finance'
+      },
+      include: {
+        order: {
+          include: { user: true, mitra: true }
+        }
+      }
+    });
+
+    // If DP invoice marked paid, update order to DP_CONFIRMED / IN_PRODUCTION
+    if (updated.type === 'DP_PAYMENT') {
+      await prisma.order.update({
+        where: { id: updated.orderId },
+        data: {
+          paymentStatus: 'DP_PAID',
+          status: 'IN_PRODUCTION',
+          dpPaidAt: updated.paidDate
+        }
+      });
+    } else if (updated.type === 'FINAL_PAYMENT' || updated.type === 'FULL_PAYMENT') {
+      await prisma.order.update({
+        where: { id: updated.orderId },
+        data: {
+          paymentStatus: 'FULLY_PAID',
+          status: 'FINAL_PAYMENT_CONFIRMED',
+          finalPaidAt: updated.paidDate
+        }
+      });
+    }
+
+    res.json({ message: `Faktur ${updated.invoiceNumber} berhasil ditandai LUNAS`, invoice: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/finance/settlement (Monthly Settlement Report)
+router.get('/finance/settlement', authorizeRoles('ADMIN_FINANCE', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+    const invoices = await prisma.invoice.findMany({
+      where: { status: 'PAID' },
+      include: { order: true }
+    });
+
+    const monthlySettlement = Array.from({ length: 12 }, (_, i) => ({
+      month: i + 1,
+      monthName: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'][i],
+      dpCollected: 0,
+      finalCollected: 0,
+      fullCollected: 0,
+      totalCollected: 0,
+      invoiceCount: 0
+    }));
+
+    invoices.forEach(inv => {
+      const d = inv.paidDate ? new Date(inv.paidDate) : new Date(inv.createdAt);
+      if (d.getFullYear() === year) {
+        const m = d.getMonth();
+        if (inv.type === 'DP_PAYMENT') monthlySettlement[m].dpCollected += inv.amount;
+        else if (inv.type === 'FINAL_PAYMENT') monthlySettlement[m].finalCollected += inv.amount;
+        else if (inv.type === 'FULL_PAYMENT') monthlySettlement[m].fullCollected += inv.amount;
+
+        monthlySettlement[m].totalCollected += inv.amount;
+        monthlySettlement[m].invoiceCount += 1;
+      }
+    });
+
+    const grandTotal = monthlySettlement.reduce((sum, m) => sum + m.totalCollected, 0);
+
+    res.json({
+      year,
+      grandTotal,
+      monthlySettlement
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/admin/stats (Overview dashboard stats)
 router.get('/stats', async (req, res) => {
   try {

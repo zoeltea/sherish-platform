@@ -89,6 +89,10 @@
           <i data-lucide="percent" class="w-4 h-4"></i>
           <span>Komisi Referral Sales</span>
         </button>
+        <button onclick="switchTab('finance')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="finance">
+          <i data-lucide="wallet" class="w-4 h-4 text-emerald-400"></i>
+          <span>Rekonsiliasi Keuangan</span>
+        </button>
         <button onclick="switchTab('users')" class="nav-tab w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-all" data-tab="users">
           <i data-lucide="users" class="w-4 h-4"></i>
           <span>Manajemen Akun User</span>
@@ -356,7 +360,58 @@
       </div>
     </div>
 
-    <!-- TAB 7: USERS -->
+    <!-- TAB 7: FINANCE RECONCILIATION -->
+    <div id="tab-finance" class="hidden space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Tagihan Belum Terbayar (Pending)</span>
+          <p class="text-2xl font-bold text-amber-400" id="finStatPending">Rp 0</p>
+          <p class="text-[10px] text-slate-400 mt-2" id="finStatPendingCount">0 Faktur Menunggu Pembayaran</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Total Penerimaan Dana (Paid)</span>
+          <p class="text-2xl font-bold text-emerald-400" id="finStatPaid">Rp 0</p>
+          <p class="text-[10px] text-emerald-400 mt-2" id="finStatPaidCount">0 Faktur Lunas Terverifikasi</p>
+        </div>
+        <div class="glass-card p-5 rounded-2xl">
+          <span class="text-xs text-slate-400 font-medium block mb-1">Faktur Jatuh Tempo (Overdue)</span>
+          <p class="text-2xl font-bold text-rose-400" id="finStatOverdue">Rp 0</p>
+          <p class="text-[10px] text-rose-400 mt-2" id="finStatOverdueCount">0 Faktur Perlu Follow-up</p>
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h3 class="font-bold text-sm text-slate-100">Daftar Faktur Piutang & Rekonsiliasi Pembayaran</h3>
+            <p class="text-xs text-slate-400">Verifikasi uang masuk DP 50%, pelunasan akhir, dan cetak PDF invoice resmi.</p>
+          </div>
+          <button onclick="loadFinanceSettlementReport()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs flex items-center gap-1.5">
+            <i data-lucide="file-spreadsheet" class="w-3.5 h-3.5"></i>
+            <span>Laporan Settlement Bulanan</span>
+          </button>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+              <tr>
+                <th class="p-3">No Faktur</th>
+                <th class="p-3">Pelanggan / Toko Mitra</th>
+                <th class="p-3">Tipe Tagihan</th>
+                <th class="p-3">Nominal Tagihan</th>
+                <th class="p-3">Jatuh Tempo</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Aksi Rekonsiliasi</th>
+              </tr>
+            </thead>
+            <tbody id="financeInvoicesTableBody" class="divide-y divide-slate-800"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 8: USERS -->
     <div id="tab-users" class="hidden space-y-6">
       <h3 class="font-bold text-base text-slate-100">Manajemen Pengguna & Staf (Super Admin)</h3>
       <div class="glass-card rounded-2xl p-6">
@@ -614,6 +669,120 @@
       }
     }
 
+    async function loadFinanceDashboard() {
+      try {
+        const res = await fetch(`${API_URL}/admin/finance/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        document.getElementById('finStatPending').innerText = formatIDR(data.totalPending || 0);
+        document.getElementById('finStatPendingCount').innerText = `${data.pendingCount || 0} Faktur Menunggu Pembayaran`;
+
+        document.getElementById('finStatPaid').innerText = formatIDR(data.totalPaid || 0);
+        document.getElementById('finStatPaidCount').innerText = `${data.paidCount || 0} Faktur Lunas Terverifikasi`;
+
+        document.getElementById('finStatOverdue').innerText = formatIDR(data.totalOverdue || 0);
+        document.getElementById('finStatOverdueCount').innerText = `${data.overdueCount || 0} Faktur Perlu Follow-up`;
+
+        await loadFinanceInvoices();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadFinanceInvoices() {
+      try {
+        const res = await fetch(`${API_URL}/admin/finance/invoices`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('financeInvoicesTableBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        if (!data.invoices || data.invoices.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-6 text-slate-500">Belum ada data invoice.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.invoices.map(inv => {
+          const custName = inv.order?.mitra?.storeName ? `${inv.order.mitra.storeName}` : (inv.order?.user?.fullName || '-');
+          return `
+            <tr class="hover:bg-slate-800/40">
+              <td class="p-3 font-mono font-bold text-indigo-400">
+                <a href="${API_URL}/invoices/${inv.id}/pdf" target="_blank" class="hover:underline flex items-center gap-1">
+                  <i data-lucide="file-text" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  <span>${inv.invoiceNumber}</span>
+                </a>
+              </td>
+              <td class="p-3">
+                <p class="font-bold text-slate-100">${custName}</p>
+                <p class="text-[10px] text-slate-400">Pesanan #${inv.order?.orderNumber || '-'}</p>
+              </td>
+              <td class="p-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-indigo-300">${inv.type.replace('_', ' ')}</span>
+              </td>
+              <td class="p-3 font-bold text-slate-100">${formatIDR(inv.amount)}</td>
+              <td class="p-3 text-[11px] text-slate-300">${new Date(inv.dueDate).toLocaleDateString('id-ID')}</td>
+              <td class="p-3">
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold ${inv.status==='PAID'?'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20':'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${inv.status}</span>
+              </td>
+              <td class="p-3">
+                <div class="flex gap-1.5">
+                  ${inv.status === 'PENDING' ? `
+                    <button onclick="markInvoicePaid('${inv.id}')" class="px-2 py-1 rounded bg-emerald-600 hover:bg-emerald-700 text-[10px] font-bold text-white">Tandai Lunas</button>
+                  ` : `
+                    <a href="${API_URL}/invoices/${inv.id}/pdf" target="_blank" class="px-2 py-1 rounded bg-slate-800 hover:bg-slate-700 text-[10px] text-slate-200">Cetak PDF</a>
+                  `}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+        lucide.createIcons();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function markInvoicePaid(invoiceId) {
+      const method = prompt('Metode Pembayaran Rekonsiliasi:', 'Bank Transfer BCA');
+      if (!method) return;
+
+      try {
+        const res = await fetch(`${API_URL}/admin/finance/invoices/${invoiceId}/mark-paid`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ paymentMethod: method })
+        });
+        if (res.ok) {
+          alert('Faktur berhasil diverifikasi LUNAS & status pesanan diperbarui otomatis.');
+          await loadFinanceDashboard();
+        } else {
+          alert('Gagal rekonsiliasi invoice.');
+        }
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadFinanceSettlementReport() {
+      try {
+        const res = await fetch(`${API_URL}/admin/finance/settlement`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+        alert(`📊 Laporan Settlement ${data.year}:\nTotal Kas Masuk Terverifikasi: ${formatIDR(data.grandTotal)}\nLaporan detail telah siap diekspor.`);
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
     async function loadProducts() {
       try {
         const res = await fetch(`${API_URL}/products`);
@@ -857,7 +1026,7 @@
         }
       });
 
-      ['overview', 'mitra-kyc', 'products', 'orders', 'bookings', 'commissions', 'users'].forEach(t => {
+      ['overview', 'mitra-kyc', 'products', 'orders', 'bookings', 'commissions', 'finance', 'users'].forEach(t => {
         const el = document.getElementById(`tab-${t}`);
         if (el) el.classList.add('hidden');
       });
@@ -871,6 +1040,7 @@
         orders: ['Master Manajemen Pesanan Global', 'Monitoring seluruh transaksi customer dan mitra di seluruh Indonesia.'],
         bookings: ['Booking Survey Lokasi & Desain Arsitektur', 'Manajemen jadwal kunjungan on-site dan penugasan arsitek senior.'],
         commissions: ['Manajemen Komisi Referral & Sales Canvaser', 'Verifikasi, persetujuan, dan pencairan komisi perolehan mitra toko baru.'],
+        finance: ['Rekonsiliasi Keuangan & Settlement', 'Verifikasi pembayaran DP 50%, pelunasan piutang mitra, dan cetak faktur resmi.'],
         users: ['Manajemen Pengguna & Staf (Super Admin)', 'Kelola hak akses role RBAC seluruh pengguna internal dan pelanggan.']
       };
 
@@ -880,6 +1050,7 @@
       }
 
       if (tab === 'commissions') loadCommissionsList();
+      if (tab === 'finance') loadFinanceDashboard();
 
       lucide.createIcons();
     }
