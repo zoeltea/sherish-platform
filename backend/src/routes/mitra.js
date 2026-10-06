@@ -110,6 +110,111 @@ router.get('/stats', authenticateToken, authorizeRoles('MITRA'), async (req, res
   }
 });
 
+// GET /api/mitra/sales/dashboard (Sales canvaser / partner dedicated dashboard metrics)
+router.get('/sales/dashboard', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const salesId = (req.user.role === 'SUPER_ADMIN' && req.query.salesId) ? req.query.salesId : req.user.id;
+
+    const commissions = await prisma.referralCommission.findMany({
+      where: { salesId },
+      include: {
+        referredMitra: {
+          include: {
+            user: { select: { fullName: true, email: true, phoneNumber: true } },
+            orders: { select: { id: true, totalAmount: true, status: true } }
+          }
+        }
+      }
+    });
+
+    const totalCommissions = commissions.reduce((sum, c) => sum + (c.status === 'PAID' || c.status === 'APPROVED' ? c.commissionAmount : 0), 0);
+    const pendingCommissions = commissions.reduce((sum, c) => sum + (c.status === 'PENDING' ? c.commissionAmount : 0), 0);
+    const paidCommissions = commissions.reduce((sum, c) => sum + (c.status === 'PAID' ? c.commissionAmount : 0), 0);
+
+    const referralCount = commissions.length;
+    const activeReferrals = commissions.filter(c => c.referredMitra?.orders?.length > 0 || c.referredMitra?.status === 'VERIFIED').length;
+
+    let topReferral = null;
+    if (commissions.length > 0) {
+      const sorted = [...commissions].sort((a, b) => b.commissionAmount - a.commissionAmount);
+      topReferral = {
+        name: sorted[0].referredMitra?.storeName || '-',
+        commission: sorted[0].commissionAmount,
+        status: sorted[0].status
+      };
+    }
+
+    res.json({
+      totalCommissions,
+      pendingCommissions,
+      paidCommissions,
+      referralCount,
+      activeReferrals,
+      topReferral,
+      commissions
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/mitra/sales/referrals (List referred mitra with filter)
+router.get('/sales/referrals', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const salesId = (req.user.role === 'SUPER_ADMIN' && req.query.salesId) ? req.query.salesId : req.user.id;
+    const { status } = req.query;
+
+    const where = { referralSalesId: salesId };
+    if (status) where.status = status;
+
+    const referrals = await prisma.mitraProfile.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { fullName: true, email: true, phoneNumber: true } },
+        commissions: { where: { salesId } },
+        orders: { select: { id: true, orderNumber: true, totalAmount: true, status: true } }
+      }
+    });
+
+    res.json({ count: referrals.length, referrals });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/mitra/sales/performance (Monthly performance trend for sales partner)
+router.get('/sales/performance', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const salesId = (req.user.role === 'SUPER_ADMIN' && req.query.salesId) ? req.query.salesId : req.user.id;
+    const year = parseInt(req.query.year) || new Date().getFullYear();
+
+    const commissions = await prisma.referralCommission.findMany({
+      where: { salesId }
+    });
+
+    const monthlyStats = Array.from({ length: 12 }, (_, i) => ({
+      month: i + 1,
+      monthName: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'][i],
+      commissions: 0,
+      referralCount: 0
+    }));
+
+    commissions.forEach(c => {
+      const d = new Date(c.createdAt);
+      if (d.getFullYear() === year) {
+        const m = d.getMonth();
+        monthlyStats[m].commissions += c.commissionAmount;
+        monthlyStats[m].referralCount += 1;
+      }
+    });
+
+    res.json({ year, monthlyStats });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // GET /api/mitra/sales/commissions (Get commissions for sales partner)
 router.get('/sales/commissions', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
   try {

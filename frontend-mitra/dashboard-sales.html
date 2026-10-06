@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-950 text-slate-100">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sherish Sales Hub — Performance & Commission Dashboard</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .glass-card { background: rgba(30, 41, 59, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(51, 65, 85, 0.6); }
+  </style>
+</head>
+<body class="h-full font-sans antialiased bg-slate-950 text-slate-100 flex flex-col min-h-screen">
+
+  <!-- Header -->
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold text-lg shadow-lg shadow-amber-500/20">
+        S
+      </div>
+      <div>
+        <h1 class="font-bold text-sm tracking-wider text-slate-100">SHERISH SALES HUB</h1>
+        <span class="text-[10px] text-amber-400 font-semibold">Sales Canvaser & Field Acquisition Dashboard</span>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <div class="text-right">
+        <p class="text-xs font-bold text-slate-200" id="salesName">Budi Cahyadi</p>
+        <span class="text-[10px] text-emerald-400 font-medium" id="salesArea">Area: Bandung</span>
+      </div>
+      <a href="index.html" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 font-medium flex items-center gap-1">
+        <i data-lucide="store" class="w-3.5 h-3.5"></i>
+        <span>Portal Mitra</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-6 max-w-7xl mx-auto w-full space-y-6">
+    
+    <!-- Top Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div class="glass-card p-5 rounded-2xl">
+        <span class="text-xs text-slate-400 font-medium block mb-1">Total Komisi Disetujui</span>
+        <p class="text-2xl font-bold text-emerald-400" id="statTotalComm">Rp 0</p>
+        <p class="text-[10px] text-slate-400 mt-2">Termasuk pencairan selesai</p>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl">
+        <span class="text-xs text-slate-400 font-medium block mb-1">Komisi Pending Review</span>
+        <p class="text-2xl font-bold text-amber-400" id="statPendingComm">Rp 0</p>
+        <p class="text-[10px] text-slate-400 mt-2">Menunggu verifikasi order</p>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl">
+        <span class="text-xs text-slate-400 font-medium block mb-1">Total Mitra Terakuisisi</span>
+        <p class="text-2xl font-bold text-indigo-400" id="statReferralCount">0</p>
+        <p class="text-[10px] text-emerald-400 mt-2" id="statActiveCount">0 Mitra Aktif Bertransaksi</p>
+      </div>
+
+      <div class="glass-card p-5 rounded-2xl">
+        <span class="text-xs text-slate-400 font-medium block mb-1">Top Akun Kontributor</span>
+        <p class="text-base font-bold text-slate-100 truncate" id="statTopReferral">-</p>
+        <p class="text-[10px] text-emerald-400 mt-2 font-semibold" id="statTopComm">Bonus: Rp 0</p>
+      </div>
+    </div>
+
+    <!-- Monthly Performance Breakdown -->
+    <div class="glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-sm text-slate-100">Tren Performa & Akuisisi Mitra (Tahun 2026)</h3>
+          <p class="text-xs text-slate-400">Pertumbuhan komisi referral per bulan.</p>
+        </div>
+        <button onclick="exportStatement()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-slate-950 font-bold text-xs flex items-center gap-1.5">
+          <i data-lucide="download" class="w-3.5 h-3.5"></i>
+          <span>Unduh Laporan (CSV)</span>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-6 sm:grid-cols-12 gap-2 pt-4" id="monthlyTrendContainer">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+
+    <!-- Referral Mitra Table -->
+    <div class="glass-card rounded-2xl p-6 space-y-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-sm text-slate-100">Daftar Rekanan Mitra & Status Verifikasi</h3>
+          <p class="text-xs text-slate-400">Toko furnitur dan showroom yang terdaftar via referral Anda.</p>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-800/60 text-slate-400 border-b border-slate-700/60">
+            <tr>
+              <th class="p-3">Nama Toko Mitra</th>
+              <th class="p-3">Kontak Pemilik</th>
+              <th class="p-3">Kota / Area</th>
+              <th class="p-3">Tipe Kemitraan</th>
+              <th class="p-3">Status Mitra</th>
+              <th class="p-3">Bonus Referral</th>
+            </tr>
+          </thead>
+          <tbody id="referralsTableBody" class="divide-y divide-slate-800"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:8095/api'
+      : `http://${window.location.hostname}:8095/api`;
+    let token = localStorage.getItem('sherish_mitra_token');
+
+    async function init() {
+      lucide.createIcons();
+      if (!token) {
+        await autoLoginSales();
+      } else {
+        await loadDashboard();
+      }
+    }
+
+    async function autoLoginSales() {
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: 'budi.sales@sherish.co.id', password: 'Sherish123!' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          token = data.token;
+          localStorage.setItem('sherish_mitra_token', token);
+          await loadDashboard();
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/sales/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) return;
+
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+        document.getElementById('statTotalComm').innerText = formatIDR(data.totalCommissions);
+        document.getElementById('statPendingComm').innerText = formatIDR(data.pendingCommissions);
+        document.getElementById('statReferralCount').innerText = data.referralCount;
+        document.getElementById('statActiveCount').innerText = `${data.activeReferrals} Mitra Aktif Bertransaksi`;
+
+        if (data.topReferral) {
+          document.getElementById('statTopReferral').innerText = data.topReferral.name;
+          document.getElementById('statTopComm').innerText = `Bonus: ${formatIDR(data.topReferral.commission)}`;
+        }
+
+        await loadReferrals();
+        await loadPerformance();
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadReferrals() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/sales/referrals`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const tbody = document.getElementById('referralsTableBody');
+        const formatIDR = (val) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+
+        if (!data.referrals || data.referrals.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500">Belum ada mitra binaan.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.referrals.map(r => `
+          <tr class="hover:bg-slate-800/40">
+            <td class="p-3 font-bold text-slate-100">${r.storeName}</td>
+            <td class="p-3">
+              <p class="font-medium">${r.user?.fullName || '-'}</p>
+              <p class="text-[10px] text-slate-400">${r.user?.phoneNumber || '-'}</p>
+            </td>
+            <td class="p-3">${r.workArea || r.storeCity}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-slate-800 text-indigo-300">${r.mitraType}</span></td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${r.status==='VERIFIED'?'bg-emerald-500/10 text-emerald-400':'bg-amber-500/10 text-amber-400'}">${r.status}</span></td>
+            <td class="p-3 font-bold text-emerald-400">
+              ${r.commissions?.length > 0 ? formatIDR(r.commissions[0].commissionAmount) : 'Rp 500.000 (Bonus)'}
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    async function loadPerformance() {
+      try {
+        const res = await fetch(`${API_URL}/mitra/sales/performance?year=2026`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        const container = document.getElementById('monthlyTrendContainer');
+        const maxVal = Math.max(...data.monthlyStats.map(s => s.commissions), 1000000);
+
+        container.innerHTML = data.monthlyStats.map(m => {
+          const heightPercent = Math.max(Math.round((m.commissions / maxVal) * 100), 12);
+          return `
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-full bg-slate-900 rounded-lg h-28 flex items-end p-1">
+                <div class="w-full rounded bg-emerald-500/80 hover:bg-emerald-400 transition-all text-center text-[9px] font-bold text-slate-950 flex items-center justify-center" style="height: ${heightPercent}%">
+                  ${m.referralCount > 0 ? m.referralCount : ''}
+                </div>
+              </div>
+              <span class="text-[10px] font-semibold text-slate-400">${m.monthName}</span>
+            </div>
+          `;
+        }).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function exportStatement() {
+      alert('Mengunduh rekapitulasi performa komisi sales...');
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
