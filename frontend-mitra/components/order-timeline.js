@@ -84,10 +84,10 @@
       case 'FINAL_PAYMENT_CONFIRMED':
         return 3; // QC phase
       case 'SHIPPED':
-        return 4; // Shipped / in transit
+        return 5; // Step 1-5 Done (indices 0..4), Step 6 Active (Delivered / Diterima & Terpasang - index 5)
       case 'COMPLETED':
       case 'DELIVERED':
-        return 5; // Delivered / Completed
+        return 6; // All Steps 1-6 Done (indices 0..5 done, active step none / beyond 5)
       case 'CANCELLED':
         return -1;
       default:

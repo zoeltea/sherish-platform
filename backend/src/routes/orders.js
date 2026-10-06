@@ -427,4 +427,61 @@ router.patch('/:identifier/status', authenticateToken, authorizeRoles('ADMIN_FIN
   }
 });
 
+// PATCH /api/orders/:identifier/complete (Customer / Mitra completes order receipt)
+router.patch('/:identifier/complete', authenticateToken, async (req, res) => {
+  try {
+    const { identifier } = req.params;
+
+    const order = await prisma.order.findFirst({
+      where: {
+        OR: [
+          { id: identifier },
+          { orderNumber: identifier }
+        ]
+      },
+      include: {
+        items: { include: { product: true } },
+        user: true,
+        mitra: true
+      }
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: 'Order tidak ditemukan' });
+    }
+
+    // Authorization check: CUSTOMER or MITRA must own the order, unless admin
+    if (req.user.role === 'CUSTOMER' && order.userId !== req.user.id) {
+      return res.status(403).json({ error: 'Akses ditolak.' });
+    }
+    if (req.user.role === 'MITRA' && order.userId !== req.user.id && req.user.role !== 'SUPER_ADMIN') {
+      return res.status(403).json({ error: 'Akses ditolak.' });
+    }
+
+    // Status validation: order can only be completed if currently SHIPPED or READY_FOR_SHIPMENT
+    if (!['SHIPPED', 'READY_FOR_SHIPMENT'].includes(order.status)) {
+      return res.status(400).json({ error: 'Pesanan belum dalam status pengiriman (SHIPPED)' });
+    }
+
+    const updated = await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: 'COMPLETED'
+      },
+      include: {
+        items: { include: { product: true } },
+        user: true,
+        mitra: true
+      }
+    });
+
+    res.json({
+      message: 'Pesanan berhasil diselesaikan dan barang telah diterima.',
+      order: updated
+    });
+  } catch (err) {
+    res.status(500).json({ error: `Gagal menyelesaikan pesanan: ${err.message}` });
+  }
+});
+
 module.exports = router;
