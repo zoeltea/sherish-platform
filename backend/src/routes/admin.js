@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -112,8 +113,19 @@ router.patch('/mitra/:id/status', authorizeRoles('ADMIN_QUALITY', 'SUPER_ADMIN')
     const { status } = req.body; // VERIFIED, REJECTED, SUSPENDED, PENDING_VERIFICATION
     const updated = await prisma.mitraProfile.update({
       where: { id: req.params.id },
-      data: { status }
+      data: { status },
+      include: {
+        user: { select: { fullName: true, email: true } }
+      }
     });
+
+    if (status === 'VERIFIED') {
+      try {
+        await emailService.sendKYCApprovedEmail(updated, updated.user);
+      } catch (e) {
+        console.error('Email KYC trigger error:', e.message);
+      }
+    }
 
     res.json({ message: `Status verifikasi mitra diperbarui menjadi ${status}`, mitra: updated });
   } catch (err) {
@@ -172,6 +184,16 @@ router.patch('/commissions/:id/status', authorizeRoles('ADMIN_FINANCE', 'SUPER_A
     });
 
     res.json({ message: `Status komisi referral diperbarui menjadi ${status}`, commission: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/emails (View sent email notifications log)
+router.get('/emails', async (req, res) => {
+  try {
+    const logs = emailService.getEmailLogs();
+    res.json({ count: logs.length, logs });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

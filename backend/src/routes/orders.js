@@ -1,6 +1,7 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
 const { authenticateToken, authorizeRoles } = require('../middlewares/auth');
+const emailService = require('../services/emailService');
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -95,9 +96,17 @@ router.post('/', authenticateToken, async (req, res) => {
       include: {
         items: {
           include: { product: true }
-        }
+        },
+        user: true
       }
     });
+
+    // Trigger Email Notification: Order Confirmation & DP Instructions
+    try {
+      await emailService.sendOrderConfirmedEmail(order, order.user || req.user);
+    } catch (e) {
+      console.error('Email trigger error:', e.message);
+    }
 
     res.status(201).json({
       message: isMitra
@@ -218,6 +227,15 @@ router.patch('/:identifier/payment', authenticateToken, async (req, res) => {
       }
     });
 
+    // Trigger Email: DP Payment confirmation
+    if (type === 'DP' || order.paymentScheme === 'FULL_PAYMENT' || type === 'FULL') {
+      try {
+        await emailService.sendDpPaymentReceivedEmail(updated, updated.user);
+      } catch (e) {
+        console.error('Email trigger error:', e.message);
+      }
+    }
+
     res.json({
       message: 'Pembayaran berhasil dikonfirmasi dan diverifikasi.',
       order: updated
@@ -251,8 +269,20 @@ router.patch('/:identifier/status', authenticateToken, authorizeRoles('ADMIN_FIN
     const updated = await prisma.order.update({
       where: { id: order.id },
       data,
-      include: { items: { include: { product: true } } }
+      include: {
+        items: { include: { product: true } },
+        user: true
+      }
     });
+
+    // Trigger Email: Shipping or Status change
+    if (status === 'SHIPPED') {
+      try {
+        await emailService.sendOrderShippedEmail(updated, updated.user);
+      } catch (e) {
+        console.error('Email trigger error:', e.message);
+      }
+    }
 
     res.json({ message: 'Status order berhasil diperbarui.', order: updated });
   } catch (err) {

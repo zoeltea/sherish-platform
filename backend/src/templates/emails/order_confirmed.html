@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 20px; color: #1e293b; }
+    .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; }
+    .header { background: #0f172a; padding: 30px; text-align: center; color: #ffffff; }
+    .header h1 { margin: 0; font-size: 22px; letter-spacing: 2px; }
+    .content { padding: 30px; }
+    .badge { display: inline-block; padding: 6px 12px; background: #ecfdf5; color: #059669; border-radius: 8px; font-weight: bold; font-size: 12px; }
+    .card { background: #f8fafc; border-radius: 12px; padding: 20px; margin: 20px 0; border: 1px solid #e2e8f0; }
+    .row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; }
+    .row-total { border-top: 1px solid #cbd5e1; padding-top: 8px; font-weight: bold; font-size: 15px; color: #0f172a; }
+    .highlight { color: #059669; font-weight: bold; font-size: 16px; }
+    .footer { background: #f1f5f9; padding: 20px; text-align: center; font-size: 11px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>SHERISH CIPTA INTERINDO</h1>
+      <p style="margin: 5px 0 0 0; font-size: 12px; color: #94a3b8;">Official Order Confirmation & DP Instructions</p>
+    </div>
+    <div class="content">
+      <span class="badge">Pesanan Diterima</span>
+      <h2 style="margin: 15px 0 5px 0; font-size: 18px;">Halo, {{customerName}}</h2>
+      <p style="font-size: 13px; color: #475569; line-height: 1.6;">
+        Terima kasih telah melakukan pemesanan furnitur berkualitas di platform Sherish. Pesanan Anda <strong>#{{orderNumber}}</strong> telah berhasil kami catat dalam antrean sistem manufaktur kami.
+      </p>
+
+      <div class="card">
+        <div class="row"><span>Nomor Pesanan:</span><strong>{{orderNumber}}</strong></div>
+        <div class="row"><span>Tipe Pesanan:</span><strong>{{orderType}}</strong></div>
+        <div class="row"><span>Skema Pembayaran:</span><strong>{{paymentScheme}}</strong></div>
+        <div class="row"><span>Alamat Tujuan:</span><span>{{shippingAddress}}, {{shippingCity}}</span></div>
+        <div class="row"><span>Penerima:</span><span>{{recipientName}}</span></div>
+        <div class="row row-total"><span>Total Nilai Pesanan:</span><span>{{totalAmount}}</span></div>
+        <div class="row" style="color: #059669; font-weight: bold;"><span>Nominal Wajib DP:</span><span class="highlight">{{dpAmount}}</span></div>
+        <div class="row" style="color: #d97706;"><span>Sisa Pelunasan Sebelum Kirim:</span><span>{{remainingAmount}}</span></div>
+      </div>
+
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 15px; border-radius: 8px; font-size: 12px; color: #1e40af; line-height: 1.5;">
+        <strong>Instruksi Transfer Down Payment (DP):</strong><br/>
+        Silakan transfer nominal DP ke rekening resmi PT. Sherish Cipta Interindo:<br/>
+        <strong>BCA: 8830-1928-31</strong> a.n. PT Sherish Cipta Interindo.<br/>
+        Setelah transfer, silakan upload bukti transaksi di portal pesanan Anda.
+      </div>
+    </div>
+    <div class="footer">
+      PT. Sherish Cipta Interindo · Jl. Panyaungan No. 15 Cileunyi, Bandung · cs@sherish.co.id
+    </div>
+  </div>
+</body>
+</html>
