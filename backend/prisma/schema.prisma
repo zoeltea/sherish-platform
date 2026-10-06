@@ -97,6 +97,8 @@ model MitraProfile {
   partnerType     String       @default("TOKO_FURNITUR") // TOKO_FURNITUR, INTERIOR_DESIGNER, KONTRAKTOR, INDEPENDENT_SALES
   storeCity       String
   storeAddress    String
+  workArea        String?      // "Jakarta", "Bandung", "Surabaya", etc for sales territory
+  workAreaRegions String?      // JSON array of sub-districts/areas
   description     String?
   status          MitraStatus  @default(PENDING_VERIFICATION)
   discountTier    Float        @default(0.25) // Default 25% margin potongan harga dari harga retail

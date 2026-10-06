@@ -218,7 +218,7 @@
               <tr>
                 <th class="p-3">Nama Toko / Mitra</th>
                 <th class="p-3">Pemilik & Kontak</th>
-                <th class="p-3">Kota / Lokasi</th>
+                <th class="p-3">Kota / Area Kerja</th>
                 <th class="p-3">Rekening Bank</th>
                 <th class="p-3">Status Verifikasi</th>
                 <th class="p-3">Aksi Approval</th>
@@ -470,7 +470,10 @@
               <p class="font-medium">${m.user.fullName}</p>
               <p class="text-[10px] text-slate-400">${m.user.email} · ${m.user.phoneNumber || '-'}</p>
             </td>
-            <td class="p-3">${m.storeCity || '-'}</td>
+            <td class="p-3">
+              <p class="font-bold text-slate-200">${m.storeCity || '-'}</p>
+              <p class="text-[10px] text-emerald-400 font-semibold">Area: ${m.workArea || m.storeCity || '-'}</p>
+            </td>
             <td class="p-3 font-mono text-[11px]">${m.bankName || 'BCA'} - ${m.bankAccountNo || '-'}</td>
             <td class="p-3">
               <span class="px-2 py-0.5 rounded text-[10px] font-bold ${m.status==='VERIFIED'?'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20':'bg-amber-500/10 text-amber-400 border border-amber-500/20'}">${m.status}</span>

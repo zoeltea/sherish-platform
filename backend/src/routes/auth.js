@@ -10,7 +10,20 @@ const prisma = new PrismaClient();
 // POST /api/auth/register (Customer & Mitra)
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, fullName, phoneNumber, role, storeName, partnerType, storeCity, storeAddress, description } = req.body;
+    const {
+      email,
+      password,
+      fullName,
+      phoneNumber,
+      role,
+      storeName,
+      partnerType,
+      storeCity,
+      storeAddress,
+      workArea,
+      workAreaRegions,
+      description
+    } = req.body;
 
     if (!email || !password || !fullName) {
       return res.status(400).json({ error: 'Email, password, dan nama lengkap wajib diisi.' });
@@ -37,6 +50,8 @@ router.post('/register', async (req, res) => {
             partnerType: partnerType || 'TOKO_FURNITUR',
             storeCity: storeCity || 'Indonesia',
             storeAddress: storeAddress || '-',
+            workArea: workArea || storeCity || 'Bandung',
+            workAreaRegions: typeof workAreaRegions === 'object' ? JSON.stringify(workAreaRegions) : (workAreaRegions || null),
             description: description || null,
             status: 'PENDING_VERIFICATION'
           }

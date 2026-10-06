@@ -110,4 +110,36 @@ router.get('/stats', authenticateToken, authorizeRoles('MITRA'), async (req, res
   }
 });
 
+// PATCH /api/mitra/profile (Update mitra profile data)
+router.patch('/profile', authenticateToken, authorizeRoles('MITRA', 'SUPER_ADMIN'), async (req, res) => {
+  try {
+    const { storeName, partnerType, storeCity, storeAddress, workArea, description, bankName, bankAccountNo, bankAccountName } = req.body;
+    
+    const targetUserId = req.user.role === 'SUPER_ADMIN' && req.body.userId ? req.body.userId : req.user.id;
+    
+    const updateData = {};
+    if (storeName) updateData.storeName = storeName;
+    if (partnerType) updateData.partnerType = partnerType;
+    if (storeCity) updateData.storeCity = storeCity;
+    if (storeAddress) updateData.storeAddress = storeAddress;
+    if (workArea) updateData.workArea = workArea;
+    if (description !== undefined) updateData.description = description;
+    if (bankName) updateData.bankName = bankName;
+    if (bankAccountNo) updateData.bankAccountNo = bankAccountNo;
+    if (bankAccountName) updateData.bankAccountName = bankAccountName;
+
+    const updated = await prisma.mitraProfile.update({
+      where: { userId: targetUserId },
+      data: updateData,
+      include: {
+        user: { select: { fullName: true, email: true, phoneNumber: true } }
+      }
+    });
+
+    res.json({ message: 'Profil mitra berhasil diperbarui', profile: updated });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

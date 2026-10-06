@@ -59,11 +59,13 @@ router.get('/stats', async (req, res) => {
   }
 });
 
-// GET /api/admin/mitra (List all mitra & pending verification)
+// GET /api/admin/mitra (List all mitra & pending verification, supports ?status= and ?workArea=)
 router.get('/mitra', async (req, res) => {
   try {
-    const { status } = req.query;
-    const where = status ? { status } : {};
+    const { status, workArea } = req.query;
+    const where = {};
+    if (status) where.status = status;
+    if (workArea) where.workArea = { contains: workArea, mode: 'insensitive' };
 
     const mitras = await prisma.mitraProfile.findMany({
       where,
@@ -75,6 +77,30 @@ router.get('/mitra', async (req, res) => {
     });
 
     res.json({ count: mitras.length, mitras });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// GET /api/admin/mitra/by-area/:area (Filter mitra by region / work area)
+router.get('/mitra/by-area/:area', async (req, res) => {
+  try {
+    const { area } = req.params;
+    const mitras = await prisma.mitraProfile.findMany({
+      where: {
+        OR: [
+          { workArea: { contains: area, mode: 'insensitive' } },
+          { storeCity: { contains: area, mode: 'insensitive' } }
+        ]
+      },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { fullName: true, email: true, phoneNumber: true, isActive: true } },
+        _count: { select: { orders: true } }
+      }
+    });
+
+    res.json({ area, count: mitras.length, mitras });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

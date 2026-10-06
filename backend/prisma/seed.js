@@ -77,13 +77,16 @@ async function main() {
   // 2. Create Mitra Profile (Toko Rekanan Resmi)
   const mitraProfile = await prisma.mitraProfile.upsert({
     where: { userId: mitraUser.id },
-    update: {},
+    update: {
+      workArea: 'Bandung'
+    },
     create: {
       userId: mitraUser.id,
       storeName: 'Living Sanctuary Gallery (Toko Rekanan Bandung)',
       partnerType: 'TOKO_FURNITUR',
       storeCity: 'Bandung',
       storeAddress: 'Jl. R.E. Martadinata No. 128, Riau, Bandung',
+      workArea: 'Bandung',
       description: 'Showroom interior & toko furnitur rekanan resmi Sherish di kota Bandung.',
       status: 'VERIFIED',
       discountTier: 0.25, // Diskon B2B 25% dari Harga Retail
