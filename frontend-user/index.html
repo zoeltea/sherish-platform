@@ -1221,7 +1221,8 @@
                     <div class="text-xs space-y-1">
                       <div class="flex items-center gap-2">
                         <span class="font-mono font-bold text-earth-900">${o.orderNumber}</span>
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.paymentStatus==='FULLY_PAID'?'bg-emerald-500/10 text-emerald-700':'bg-amber-500/10 text-amber-700'}">${o.paymentStatus}</span>
+                        ${window.SherishTimeline ? window.SherishTimeline.renderBadge(o.status) : `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-sage-500/10 text-sage-800 border border-sage-500/20">${o.status}</span>`}
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${o.paymentStatus==='FULLY_PAID'?'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20':'bg-amber-500/10 text-amber-700 border border-amber-500/20'}">${o.paymentStatus}</span>
                       </div>
                       <p class="text-earth-600 font-medium">${o.items.map(i => `${i.product.title} (x${i.quantity})`).join(', ')}</p>
                       <p class="text-[10px] text-earth-400">${new Date(o.createdAt).toLocaleDateString('id-ID')}</p>
